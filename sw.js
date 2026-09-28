@@ -1,4 +1,4 @@
-const CACHE_NAME = "h4sensi-offline-v2";
+const CACHE_NAME = "h4sensi-offline-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -70,6 +70,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.endsWith("/sw.js")) return;
 
   event.respondWith(
     caches.match(request).then(async (cached) => {
