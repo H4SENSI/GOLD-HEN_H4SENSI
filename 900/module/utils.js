@@ -58,6 +58,9 @@ export function log(msg = "") {
   try {
     var el = getLogConsole();
     el.append(msg + "\n");
+    window.dispatchEvent(new CustomEvent("h4sensi-log", {
+      detail: { source: "PSFREE", message: String(msg) }
+    }));
     el.scrollTop = el.scrollHeight;
   } catch (e) {}
 }
