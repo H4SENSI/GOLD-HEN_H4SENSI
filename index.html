@@ -113,7 +113,7 @@ if("serviceWorker" in navigator){
 }
 
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=7",{scope:"./"})
+  navigator.serviceWorker.register("./sw.js?v=8",{scope:"./"})
     .then(function(reg){
       if(reg.waiting){reg.waiting.postMessage({type:"SKIP_WAITING"});}
     })
@@ -198,7 +198,7 @@ function detectFirmware(){
   };
 }
 var VERIFY_KEY="h4sensi_verified_v2";
-var HOST_BUILD="2026.09.28.7";
+var HOST_BUILD="2026.09.28.8";
 var scanToken=0;
 var scanning=false;
 var readySnapshot=null;
