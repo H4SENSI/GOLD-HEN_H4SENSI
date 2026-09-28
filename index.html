@@ -113,14 +113,14 @@ if("serviceWorker" in navigator){
 }
 
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=8",{scope:"./"})
+  navigator.serviceWorker.register("./sw.js?v=9",{scope:"./"})
     .then(function(reg){
       if(reg.waiting){reg.waiting.postMessage({type:"SKIP_WAITING"});}
     })
     .catch(function(){});
 }
 
-var ROUTE_READY={"7.00":1,"7.01":1,"7.02":1,"7.50":1,"7.51":1,"7.55":1,"8.00":1,"8.01":1,"8.03":1,"8.50":1,"8.52":1,"13.02":1,"13.04":1,"13.50":0,"13.52":0};
+var ROUTE_READY={"7.00":1,"7.01":1,"7.02":1,"7.50":1,"7.51":1,"7.55":1,"8.00":1,"8.01":1,"8.03":1,"8.50":1,"8.52":1,"13.02":1,"13.04":1,"13.50":0,"13.52":1};
 var F700={"7.00":1,"7.01":1,"7.02":1,"7.50":1,"7.51":1,"7.55":1,"8.00":1,"8.01":1,"8.03":1,"8.50":1,"8.52":1};
 var F900={"9.00":1,"9.03":1,"9.04":1,"9.50":1,"9.51":1,"9.60":1};
 var FCSS={"10.00":1,"10.01":1,"10.50":1,"10.70":1,"10.71":1,"11.00":1,"11.02":1};
@@ -198,7 +198,7 @@ function detectFirmware(){
   };
 }
 var VERIFY_KEY="h4sensi_verified_v2";
-var HOST_BUILD="2026.09.28.8";
+var HOST_BUILD="2026.09.28.9";
 var scanToken=0;
 var scanning=false;
 var readySnapshot=null;
