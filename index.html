@@ -19,9 +19,8 @@ h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:
 </head>
 <body>
 <main>
-<header class="bar"><span class="brand">H4SENSI</span><span class="live" id="cacheState">LOCAL ORIGIN</span></header>
+<header class="bar"><span class="brand">H4SENSI</span></header>
 <h1>GOLDHEN_MULTI</h1>
-<div class="sub">PS4 firmware router // exact firmware gates // local engine selection</div>
 <section class="panel">
 <div class="grid">
 <div class="cell"><span class="label">FIRMWARE</span><span class="v" id="fw">SCANNING</span></div>
@@ -32,18 +31,16 @@ h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:
 [BOOT] terminal online
 [BOOT] reading PlayStation browser user-agent...</div>
 <div class="controls">
-<select id="manual"><option value="">MANUAL FIRMWARE</option>
-<option>5.05</option><option>5.07</option><option>6.71</option><option>6.72</option>
+<select id="manual"><option value="">FIRMWARE</option>
 <option>7.00</option><option>7.01</option><option>7.02</option><option>7.50</option><option>7.51</option><option>7.55</option><option>8.00</option><option>8.01</option><option>8.03</option><option>8.50</option><option>8.52</option>
 <option>9.00</option><option>9.03</option><option>9.04</option><option>9.50</option><option>9.51</option><option>9.60</option>
 <option>10.00</option><option>10.01</option><option>10.50</option><option>10.70</option><option>10.71</option><option>11.00</option><option>11.02</option>
 <option>11.50</option><option>11.52</option><option>12.00</option><option>12.02</option><option>12.50</option><option>12.52</option><option>13.00</option><option>13.02</option><option>13.04</option><option>13.50</option><option>13.52</option>
 </select>
-<button class="btn" id="clearLog">CLEAR LOG</button><button class="btn" id="scan">RESCAN</button>
+<button class="btn" id="scan">RESCAN</button>
 <button class="btn primary" id="launch" disabled>INITIALIZE</button>
 </div>
 </section>
-<div class="foot"><span>H4SENSI // MULTI-FW ROUTER</span><span>OFFLINE CACHE READY</span></div>
 </main>
 <script>
 (function(){
@@ -64,7 +61,7 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.register("./sw.js",{scope:"./"})
     .then(function(reg){
       var state=document.getElementById("cacheState");
-      state.textContent="CACHE ONLINE";
+      if(state)state.textContent="CACHE ONLINE";
       if(reg.waiting){reg.waiting.postMessage({type:"SKIP_WAITING"});}
     })
     .catch(function(){});
@@ -199,7 +196,6 @@ window.addEventListener("h4sensi-log",function(event){
 
 terminalWrite("terminal online","BOOT");
 
-document.getElementById("clearLog").onclick=terminalReset;
 document.getElementById("scan").onclick=scan;
 sel.onchange=scan;
 scan();
