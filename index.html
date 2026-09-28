@@ -128,12 +128,12 @@ function detectFirmware(){
   }
 
   var v=keys[0];
-  var crossConfirmed=uaVersions.length===1&&appVersions.length===1&&uaVersions[0]===appVersions[0];
+  var exactUa=uaVersions.length===1&&uaVersions[0]===v;
   return {
     fw:v,
-    confidence:crossConfirmed?"HIGH":"MEDIUM",
+    confidence:exactUa?"EXACT":"MEDIUM",
     signals:signals,
-    reason:crossConfirmed?"firmware consistent across browser metadata":"firmware found in PS4 metadata"
+    reason:exactUa?"exact firmware token found in PS4 user-agent":"firmware found in PS4 browser metadata"
   };
 }
 var VERIFY_KEY="h4sensi_verified_v1";
