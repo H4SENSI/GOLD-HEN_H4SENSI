@@ -26,12 +26,11 @@ button:active{transform:scale(.98)}
   <div id="status">Listo para cargar.</div>
 </main>
 <script>
-const go=()=>{
-  const status=document.getElementById("status");
-  status.textContent="Preparando GoldHEN...";
-  // Punto de integración: cargar aquí el payload/loader de GoldHEN.
-};
-document.getElementById("go").addEventListener("click",go);
+const host="https://psx8.github.io/1352/index.html";
+document.getElementById("go").addEventListener("click",()=>{
+  document.getElementById("status").textContent="Cargando GoldHEN...";
+  window.location.href=host;
+});
 </script>
 </body>
 </html>
