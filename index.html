@@ -72,7 +72,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
     var minor=parseInt(m[2],16).toString(16);if(minor.length<2)minor="0"+minor;
     return m[1]+"."+minor;
   }
-  function patchFor(fw){var n=(fw||"").replace(".","");return /^(1302|1350|1352)$/.test(n)?("patches/"+n+".bin"):null}
+  function patchFor(fw){var n=(fw||"").replace(".","");if(n==="1304")n="1302";return /^(1302|1350|1352)$/.test(n)?("patches/"+n+".bin"):null}
   function known(fw){return /^(13\.02|13\.04|13\.50|13\.52)$/.test(fw||"")}
   function xhr(path){
     return new Promise(function(resolve){
