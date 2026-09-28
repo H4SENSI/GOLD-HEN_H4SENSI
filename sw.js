@@ -17,6 +17,11 @@ async function cacheRequest(cache, request) {
   }
 }
 
+async function broadcast(message) {
+  const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  clients.forEach((client) => client.postMessage(message));
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -56,9 +61,31 @@ self.addEventListener("message", (event) => {
   if (event.data.type === "CACHE_URLS" && Array.isArray(event.data.urls)) {
     event.waitUntil(
       caches.open(CACHE_NAME).then(async (cache) => {
-        for (const url of event.data.urls) {
-          await cacheRequest(cache, url);
+        const urls = event.data.urls;
+        let done = 0;
+        let ok = 0;
+        let failed = 0;
+
+        for (const url of urls) {
+          if (await cacheRequest(cache, url)) ok++;
+          else failed++;
+          done++;
+          await broadcast({
+            type: "PRECACHE_PROGRESS",
+            done,
+            total: urls.length,
+            ok,
+            failed
+          });
         }
+
+        await broadcast({
+          type: "PRECACHE_DONE",
+          done,
+          total: urls.length,
+          ok,
+          failed
+        });
       })
     );
   }
