@@ -1,137 +1,78 @@
 <!doctype html>
-<html lang="es" manifest="cache.manifest">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>H4SENSI // PS4 HOST</title>
+<title>H4SENSI // PS4 MULTI-FIRMWARE HOST</title>
 <style>
-:root{color-scheme:dark;--bg:#030507;--panel:#080c11;--panel2:#0b1118;--line:#18232d;--text:#e9fff3;--muted:#6c7b86;--dim:#3b4851;--green:#5cff9a;--red:#ff5f6d;--amber:#ffd166}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:"Courier New",monospace}
-body{overflow-x:hidden;background-image:linear-gradient(rgba(92,255,154,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(92,255,154,.035) 1px,transparent 1px);background-size:28px 28px}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 20%,rgba(92,255,154,.08),transparent 42%)}
-.wrap{width:min(900px,94vw);margin:0 auto;padding:22px 0 18px}
-.header{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);background:rgba(4,8,11,.88);padding:11px 14px;box-shadow:0 0 25px rgba(0,0,0,.35)}
-.brand{font-weight:800;letter-spacing:.22em}.live{font-size:11px;color:var(--green);letter-spacing:.16em}.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;box-shadow:0 0 12px rgba(92,255,154,.8)}
-.hero{padding:28px 2px 18px}.eyebrow{color:var(--green);font-size:11px;letter-spacing:.18em;text-transform:uppercase}.hero h1{font-size:clamp(34px,7vw,66px);line-height:.92;margin:12px 0 8px;letter-spacing:-.06em}.hero p{margin:0;color:var(--muted);font-family:Arial,Helvetica,sans-serif;font-size:14px}
-.panel{border:1px solid var(--line);background:rgba(8,12,17,.93);box-shadow:0 22px 60px rgba(0,0,0,.4)}
-.scan{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
-.item{background:var(--panel);padding:14px}.label{display:block;color:var(--dim);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}.value{font-size:14px;font-weight:700}.ok{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--amber)}
-.console{padding:15px 16px;min-height:118px;background:#04070a;color:#91a69a;font-size:12px;line-height:1.55;white-space:pre-wrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.console .g{color:var(--green)}.console .r{color:var(--red)}.console .a{color:var(--amber)}
-.actions{display:flex;gap:10px;padding:15px}.btn{flex:1;border:1px solid var(--line);background:#0c1218;color:var(--text);padding:15px 12px;font:700 13px "Courier New",monospace;letter-spacing:.1em;cursor:pointer}.btn:hover,.btn:focus{border-color:var(--green);outline:0;box-shadow:0 0 0 1px var(--green),0 0 24px rgba(92,255,154,.12)}.btn.primary{background:var(--green);color:#001108;border-color:var(--green)}
-.btn:disabled{opacity:.45;cursor:default}
-.footer{display:flex;justify-content:space-between;gap:14px;color:var(--dim);font-size:10px;letter-spacing:.1em;padding-top:10px;text-transform:uppercase}
-@media(max-width:620px){.scan{grid-template-columns:1fr}.actions{flex-direction:column}.hero{padding-top:22px}}
+:root{color-scheme:dark;--bg:#030608;--panel:#081017;--line:#17303b;--text:#e8fff1;--muted:#71828c;--dim:#3b4b54;--green:#5cff9a;--amber:#ffd166;--red:#ff6675}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:"Courier New",monospace}
+body{background-image:linear-gradient(rgba(92,255,154,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(92,255,154,.03) 1px,transparent 1px);background-size:28px 28px}
+main{width:min(940px,94vw);margin:auto;padding:24px 0}.bar{display:flex;justify-content:space-between;border:1px solid var(--line);padding:12px 14px}.brand{font-weight:800;letter-spacing:.23em}.live{color:var(--green);font-size:11px;letter-spacing:.14em}
+h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:-.07em;margin:34px 0 8px}.sub{color:var(--muted);font:14px/1.5 Arial,Helvetica,sans-serif}
+.panel{margin-top:22px;border:1px solid var(--line);background:#060c10}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}.cell{padding:14px;background:#071015}.label{display:block;color:var(--dim);font-size:10px;letter-spacing:.13em;margin-bottom:6px}.v{font-size:13px;font-weight:700}.ok{color:var(--green)}.warn{color:var(--amber)}.bad{color:var(--red)}
+.term{min-height:155px;padding:15px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:#8ca198;font-size:12px;line-height:1.55;white-space:pre-wrap;overflow:auto}
+.controls{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:15px}select,.btn{border:1px solid var(--line);background:#0a1218;color:var(--text);padding:13px 12px;font:700 12px "Courier New",monospace}.btn{cursor:pointer}.btn.primary{background:var(--green);color:#001108;border-color:var(--green)}.btn:disabled{opacity:.4;cursor:default}
+.foot{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;letter-spacing:.08em;padding-top:10px}
+@media(max-width:720px){.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.foot{flex-direction:column;gap:6px}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="header"><span class="brand">H4SENSI</span><span class="live"><i></i>LOCAL HOST</span></header>
-  <section class="hero">
-    <div class="eyebrow">/// system handshake</div>
-    <h1>GOLDHEN_HOST</h1>
-    <p>Automatic firmware detection · local assets · controlled launch</p>
-  </section>
-
-  <section class="panel">
-    <div class="scan">
-      <div class="item"><span class="label">Firmware</span><span class="value" id="fw">SCANNING...</span></div>
-      <div class="item"><span class="label">Compatibility</span><span class="value" id="compat">SCANNING...</span></div>
-      <div class="item"><span class="label">Browser</span><span class="value" id="browser">DETECTING...</span></div>
-      <div class="item"><span class="label">Transport</span><span class="value ok" id="transport">HTTPS/HTTP LOCAL</span></div>
-      <div class="item"><span class="label">GoldHEN</span><span class="value" id="goldhen">CHECKING...</span></div>
-      <div class="item"><span class="label">Kernel Patch</span><span class="value" id="patch">CHECKING...</span></div>
-    </div>
-
-    <div class="console" id="log">$ H4SENSI boot sequence
-&gt; initializing scanner...</div>
-
-    <div class="actions">
-      <button class="btn" id="rescan">RESCAN</button>
-      <button class="btn primary" id="launch" disabled>INITIALIZE GOLDHEN</button>
-    </div>
-  </section>
-
-  <footer class="footer"><span>H4SENSI // PS4 HOST</span><span id="build">LOCAL BUILD</span></footer>
+<main>
+<header class="bar"><span class="brand">H4SENSI</span><span class="live">LOCAL ORIGIN</span></header>
+<h1>GOLDHEN_MULTI</h1>
+<div class="sub">PS4 firmware router // 7.00 → 13.52 // firmware-specific local engines</div>
+<section class="panel">
+<div class="grid">
+<div class="cell"><span class="label">FIRMWARE</span><span class="v" id="fw">SCANNING</span></div>
+<div class="cell"><span class="label">ENGINE</span><span class="v" id="engine">SCANNING</span></div>
+<div class="cell"><span class="label">MODE</span><span class="v ok">OWN ORIGIN</span></div>
 </div>
-
+<div class="term" id="term">$ H4SENSI
+> scanner online
+> reading PlayStation browser user-agent...</div>
+<div class="controls">
+<select id="manual"><option value="">MANUAL FIRMWARE</option>
+<option>7.00</option><option>7.01</option><option>7.02</option><option>7.50</option><option>7.51</option><option>7.55</option><option>8.00</option><option>8.01</option><option>8.03</option><option>8.50</option><option>8.52</option>
+<option>9.00</option><option>9.03</option><option>9.04</option><option>9.50</option><option>9.51</option><option>9.60</option>
+<option>10.00</option><option>10.01</option><option>10.50</option><option>10.70</option><option>10.71</option><option>11.00</option><option>11.02</option>
+<option>11.50</option><option>11.52</option><option>12.00</option><option>12.02</option><option>12.50</option><option>12.52</option><option>13.00</option><option>13.02</option><option>13.04</option><option>13.50</option><option>13.52</option>
+</select>
+<button class="btn" id="scan">RESCAN</button>
+<button class="btn primary" id="launch">ROUTE</button>
+</div>
+</section>
+<div class="foot"><span>H4SENSI // MULTI-FW ROUTER</span><span>NO RUNTIME THIRD-PARTY REDIRECT</span></div>
+</main>
 <script>
 (function(){
-  var state={fw:null,compatible:false,assets:false,busy:false};
-  var required=["jb.html","jb.js","core.js","mem.js","int64.js","rpc_worker.js","ps4_offsets.js","goldhen.bin"];
-  var log=document.getElementById("log"), launch=document.getElementById("launch");
-  var fwEl=document.getElementById("fw"),compatEl=document.getElementById("compat"),browserEl=document.getElementById("browser");
-  var goldEl=document.getElementById("goldhen"),patchEl=document.getElementById("patch");
-
-  function line(text,cls){var d=document.createElement("div");if(cls)d.className=cls;d.textContent="> "+text;log.appendChild(d);log.scrollTop=log.scrollHeight}
-  function set(el,text,cls){el.textContent=text;el.className="value"+(cls?" "+cls:"")}
-  function parseFirmware(){
-    var m=/PlayStation\s+4[\/ ](\d+)\.(\d+)/.exec(navigator.userAgent);
-    if(!m)return null;
-    var minor=parseInt(m[2],16).toString(16);if(minor.length<2)minor="0"+minor;
-    return m[1]+"."+minor;
-  }
-  function patchFor(fw){var n=(fw||"").replace(".","");if(n==="1304")n="1302";return /^(1302|1350|1352)$/.test(n)?("patches/"+n+".bin"):null}
-  function known(fw){return /^(13\.02|13\.04|13\.50|13\.52)$/.test(fw||"")}
-  function xhr(path){
-    return new Promise(function(resolve){
-      var x=new XMLHttpRequest();x.open("HEAD",path,true);x.timeout=3500;
-      x.onreadystatechange=function(){if(x.readyState===4)resolve(x.status>=200&&x.status<400)}
-      x.onerror=function(){resolve(false)};x.ontimeout=function(){resolve(false)};x.send(null)
-    })
-  }
-  async function scan(){
-    if(state.busy)return;
-    state.busy=true;launch.disabled=true;
-    log.textContent="";
-    line("H4SENSI scanner online","g");
-    var fw=parseFirmware();state.fw=fw;
-    set(fwEl,fw||"UNKNOWN",fw?"ok":"warn");
-    var ua=navigator.userAgent;
-    browserEl.textContent=/PlayStation\s*4/i.test(ua)?"PS4 WEBKIT":"UNKNOWN";
-    if(!fw){set(compatEl,"NO FIRMWARE ID","bad");line("firmware identification failed","a")}
-    else if(known(fw)){state.compatible=true;set(compatEl,"SUPPORTED","ok");line("firmware "+fw+" accepted","g")}
-    else{state.compatible=false;set(compatEl,"NOT MAPPED","bad");line("firmware "+fw+" has no local mapped loader","a")}
-
-    line("checking local assets...");
-    var checks=await Promise.all(required.map(xhr));
-    var missing=[];
-    for(var i=0;i<required.length;i++){if(!checks[i])missing.push(required[i])}
-    state.assets=missing.length===0;
-    set(goldEl,checks[7]?"LOCAL PAYLOAD READY":"MISSING",checks[7]?"ok":"bad");
-    if(missing.length){line("missing: "+missing.join(", "),"a")}else{line("core assets present","g")}
-
-    var pf=patchFor(fw);
-    if(pf){
-      var po=await xhr(pf);set(patchEl,po?"LOCAL PATCH READY":"MISSING",po?"ok":"bad");
-      line((po?"patch present: ":"patch missing: ")+pf,po?"g":"a");
-      state.assets=state.assets&&po;
-    }else{
-      set(patchEl,"VERSION-SPECIFIC","warn");
-      line("no dedicated local patch mapped for this firmware","a");
-      state.assets=false;
-    }
-
-    if(location.protocol!=="https:"&&location.protocol!=="http:") line("unsupported transport: "+location.protocol,"a");
-    else line("transport ok: "+location.protocol.replace(":",""),"g");
-
-    if(state.compatible&&state.assets){
-      launch.disabled=false;line("preflight complete // READY","g");
-    }else{
-      line("preflight blocked // inspect status above","a");
-    }
-    state.busy=false;
-  }
-
-  launch.onclick=function(){
-    if(launch.disabled)return;
-    launch.disabled=true;launch.textContent="STARTING...";
-    line("transferring control to local loader","g");
-    setTimeout(function(){location.href="jb.html"},250);
-  };
-  document.getElementById("rescan").onclick=scan;
-  scan();
+var R={
+"7.00":["700","700/alert.js"],"7.01":["700","700/alert.js"],"7.02":["700","700/alert.js"],"7.50":["700","700/alert.js"],"7.51":["700","700/alert.js"],"7.55":["700","700/alert.js"],"8.00":["700","700/alert.js"],"8.01":["700","700/alert.js"],"8.03":["700","700/alert.js"],"8.50":["700","700/alert.js"],"8.52":["700","700/alert.js"],
+"9.00":["900","900/alert.js"],"9.03":["900","900/alert.js"],"9.04":["900","900/alert.js"],"9.50":["900","900/alert.js"],"9.51":["900","900/alert.js"],"9.60":["900","900/alert.js"],
+"10.00":["CSS","css/main.js"],"10.01":["CSS","css/main.js"],"10.50":["CSS","css/main.js"],"10.70":["CSS","css/main.js"],"10.71":["CSS","css/main.js"],"11.00":["CSS","css/main.js"],"11.02":["CSS","css/main.js"],
+"11.50":["SLOPKIT","jb.js"],"11.52":["SLOPKIT","jb.js"],"12.00":["SLOPKIT","jb.js"],"12.02":["SLOPKIT","jb.js"],"12.50":["SLOPKIT","jb.js"],"12.52":["SLOPKIT","jb.js"],"13.00":["SLOPKIT","jb.js"],"13.02":["SLOPKIT","jb.js"],"13.04":["SLOPKIT","jb.js"],"13.50":["SLOPKIT","jb.js"],"13.52":["SLOPKIT","jb.js"]
+};
+var fwEl=document.getElementById("fw"), engEl=document.getElementById("engine"), term=document.getElementById("term"), sel=document.getElementById("manual"), launch=document.getElementById("launch");
+function detect(){var m=/PlayStation\s+4[\/ ](\d+)\.(\d+)/i.exec(navigator.userAgent);return m?m[1]+"."+m[2]:null}
+function setfw(v,manual){
+ var fw=v||detect(), row=R[fw];
+ fwEl.textContent=fw||"UNKNOWN"; fwEl.className="v "+(row?"ok":"warn");
+ engEl.textContent=row?row[0]:"UNMAPPED"; engEl.className="v "+(row?"ok":"bad");
+ term.textContent="$ H4SENSI\n> firmware: "+(fw||"unknown")+"\n> engine: "+(row?row[0]:"none")+"\n> route: "+(row?row[1]:"blocked");
+ launch.disabled=!row;
+ window.h4sensi={fw:fw,row:row};
+}
+launch.onclick=function(){
+ var s=window.h4sensi;if(!s||!s.row)return;
+ term.textContent+="\n> loading local engine: "+s.row[1];
+ launch.disabled=true;
+ var el=document.createElement("script"); el.type="module"; el.src=s.row[1];
+ el.onerror=function(){term.textContent+="\n> local engine load failed";launch.disabled=false};
+ document.body.appendChild(el);
+};
+document.getElementById("scan").onclick=function(){setfw(sel.value||null,true)};
+sel.onchange=function(){setfw(sel.value||null,true)};
+setfw(null,false);
 })();
 </script>
 </body>
