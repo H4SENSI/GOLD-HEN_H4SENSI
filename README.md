@@ -1,11 +1,11 @@
-# GOLD-HEN_H4SENSI
+GOLD-HEN_H4SENSI
 
 Launcher web para PS4.
 
-- Firmware objetivo: 13.52
-- Host: psx8 GitHub Pages
-- El proyecto redirige al host externo y no contiene ni modifica el payload de GoldHEN.
+- Firmware configurados: 7.00 a 13.52
+- Host: H4SENSI GitHub Pages
+- Incluye cache offline mediante Service Worker.
 
-## Uso
+Uso
 
-Abrí `index.html` desde GitHub Pages o un servidor web y tocá **ABRIR GOLDHEN**.
+Abrí index.html desde GitHub Pages o un servidor web y ejecutá el host.
