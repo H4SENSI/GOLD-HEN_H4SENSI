@@ -52,7 +52,7 @@ if("serviceWorker" in navigator){
 }
 
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=3",{scope:"./"})
+  navigator.serviceWorker.register("./sw.js?v=4",{scope:"./"})
     .then(function(reg){
       if(reg.waiting){reg.waiting.postMessage({type:"SKIP_WAITING"});}
     })
