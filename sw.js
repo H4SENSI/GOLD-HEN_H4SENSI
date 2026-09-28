@@ -1,4 +1,4 @@
-const CACHE_NAME = "h4sensi-offline-v7";
+const CACHE_NAME = "h4sensi-offline-v8";
 const SHELL = [
   "./",
   "./index.html",
