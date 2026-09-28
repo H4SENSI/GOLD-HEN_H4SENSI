@@ -38,7 +38,7 @@ h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:
 <option>10.00</option><option>10.01</option><option>10.50</option><option>10.70</option><option>10.71</option><option>11.00</option><option>11.02</option>
 <option>11.50</option><option>11.52</option><option>12.00</option><option>12.02</option><option>12.50</option><option>12.52</option><option>13.00</option><option>13.02</option><option>13.04</option><option>13.50</option><option>13.52</option>
 </select>
-<button class="btn" id="scan">RESCAN</button>
+<button class="btn" id="clearLog">CLEAR LOG</button><button class="btn" id="scan">RESCAN</button>
 <button class="btn primary" id="launch" disabled>INITIALIZE</button>
 </div>
 </section>
@@ -143,6 +143,7 @@ launch.onclick=function(){
 };
 
 var fwEl=document.getElementById("fw"),engEl=document.getElementById("engine"),pre=document.getElementById("pre"),term=document.getElementById("term"),launch=document.getElementById("launch"),sel=document.getElementById("manual");
+document.getElementById("clearLog").onclick=terminalReset;
 document.getElementById("scan").onclick=scan;
 sel.onchange=scan;
 scan();
