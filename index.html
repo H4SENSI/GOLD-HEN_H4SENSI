@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOLDHEN H4SENSI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07080c;color:#f2f2f2;font-family:Arial,sans-serif}
+main{width:min(680px,90vw);padding:36px;text-align:center;border:1px solid #292d3a;border-radius:22px;background:#11131a;box-shadow:0 20px 60px #0008}
+h1{margin:0 0 10px;font-size:clamp(30px,8vw,52px)}
+p{color:#aeb3c0;line-height:1.55}
+button{margin-top:14px;padding:15px 25px;border:0;border-radius:13px;font-size:17px;font-weight:700;cursor:pointer}
+#status{font-size:13px;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<h1>GOLDHEN H4SENSI</h1>
+<p>Launcher web para PS4. El botón abre el host de GoldHEN 13.52 compatible.</p>
+<button id="go">ABRIR GOLDHEN</button>
+<p id="status">Preparando redirección...</p>
+</main>
+<script>
+const host="https://psx8.github.io/1352/index.html";
+const go=()=>location.href=host;
+document.getElementById("go").onclick=go;
+let n=3;
+const status=document.getElementById("status");
+status.textContent="Redirigiendo en "+n+" segundos...";
+const timer=setInterval(()=>{
+ n--;
+ if(n<=0){clearInterval(timer);go();}
+ else status.textContent="Redirigiendo en "+n+" segundos...";
+},1000);
+</script>
+</body>
+</html>
