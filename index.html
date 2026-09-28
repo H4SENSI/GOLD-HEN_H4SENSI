@@ -190,6 +190,17 @@ async function scan(){
   hwEl.textContent=fw? (hwVerified?"VERIFIED":"UNTESTED") : "UNKNOWN";
   hwEl.className="v "+(hwVerified?"ok":"warn");
 
+  if(fw && !row){
+    engEl.textContent="UNAVAILABLE";
+    engEl.className="v bad";
+    pre.textContent="BLOCKED";
+    pre.className="v bad";
+    launch.disabled=true;
+    window.h4=null;
+    terminalWrite("no exact route exists for detected firmware; refusing to guess","SAFETY");
+    return;
+  }
+
   if(d.confidence==="CONFLICT"){
     engEl.textContent="CONFLICT";
     engEl.className="v bad";
