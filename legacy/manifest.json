@@ -1,0 +1,30 @@
+{
+  "project": "H4SENSI GOLDHEN MULTI",
+  "legacy": {
+    "5.05": {
+      "status": "engine-required",
+      "entry": "legacy/505exploit.js",
+      "payload": "goldhen_2.4b18.12.bin",
+      "source": "https://github.com/Feyzee61/ps4jb"
+    },
+    "5.07": {
+      "status": "unsupported-by-current-goldhen-release",
+      "entry": null,
+      "payload": null
+    },
+    "6.71": {
+      "status": "engine-required",
+      "entry": "legacy/672entrypoint.js",
+      "kernel": "legacy/672kexploit.js",
+      "payload": "goldhen_2.4b18.12.bin",
+      "source": "https://github.com/Feyzee61/ps4jb"
+    },
+    "6.72": {
+      "status": "engine-required",
+      "entry": "legacy/672entrypoint.js",
+      "kernel": "legacy/672kexploit.js",
+      "payload": "goldhen_2.4b18.12.bin",
+      "source": "https://github.com/Feyzee61/ps4jb"
+    }
+  }
+}
