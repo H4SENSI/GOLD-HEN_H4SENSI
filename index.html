@@ -24,7 +24,7 @@ h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:
 <div class="grid">
 <div class="cell"><span class="label">FIRMWARE</span><span class="v" id="fw">SCANNING</span></div>
 <div class="cell"><span class="label">ENGINE</span><span class="v" id="engine">SCANNING</span></div>
-<div class="cell"><span class="label">PRECHECK</span><span class="v" id="pre">WAITING</span></div>
+<div class="cell"><span class="label">PRECHECK</span><span class="v" id="pre">WAITING</span></div><div class="cell"><span class="label">HARDWARE STATUS</span><span class="v" id="hw">CHECKING</span></div>
 </div>
 <div class="term" id="term" role="log" aria-live="polite">$ H4SENSI
 [BOOT] terminal online
@@ -59,6 +59,7 @@ if("serviceWorker" in navigator){
     .catch(function(){});
 }
 
+var VERIFIED_HW={"13.02":1,"13.52":1};
 var F700={"7.00":1,"7.01":1,"7.02":1,"7.50":1,"7.51":1,"7.55":1,"8.00":1,"8.01":1,"8.03":1,"8.50":1,"8.52":1};
 var F900={"9.00":1,"9.03":1,"9.04":1,"9.50":1,"9.51":1,"9.60":1};
 var FCSS={"10.00":1,"10.01":1,"10.50":1,"10.70":1,"10.71":1,"11.00":1,"11.02":1};
@@ -165,6 +166,9 @@ async function scan(){
   terminalWrite("confidence: "+d.confidence+" // "+d.reason,"DETECT");
   fwEl.textContent=fw||"UNKNOWN";
   fwEl.className="v "+(row?"ok":"warn");
+  var hwVerified=!!VERIFIED_HW[fw];
+  hwEl.textContent=fw? (hwVerified?"VERIFIED":"UNTESTED") : "UNKNOWN";
+  hwEl.className="v "+(hwVerified?"ok":"warn");
 
   if(d.confidence==="CONFLICT"){
     engEl.textContent="CONFLICT";
@@ -174,6 +178,18 @@ async function scan(){
     terminalWrite("firmware detection conflict; refusing to guess","DETECT");
     launch.disabled=true;
     window.h4=null;
+    return;
+  }
+
+  if(fw && !hwVerified){
+    engEl.textContent=row?row[0]:"UNAVAILABLE";
+    engEl.className="v "+(row?"warn":"bad");
+    pre.textContent="BLOCKED";
+    pre.className="v bad";
+    launch.disabled=true;
+    window.h4=null;
+    terminalWrite("route blocked: firmware is not marked hardware-verified","SAFETY");
+    terminalWrite("required status: VERIFIED_ON_HARDWARE","SAFETY");
     return;
   }
 
@@ -243,7 +259,7 @@ launch.onclick=function(){
   document.body.appendChild(s);
 };
 
-var fwEl=document.getElementById("fw"),engEl=document.getElementById("engine"),pre=document.getElementById("pre"),term=document.getElementById("term"),launch=document.getElementById("launch");
+var fwEl=document.getElementById("fw"),engEl=document.getElementById("engine"),pre=document.getElementById("pre"),hwEl=document.getElementById("hw"),term=document.getElementById("term"),launch=document.getElementById("launch");
 var terminalLines=[];
 var terminalMax=180;
 
