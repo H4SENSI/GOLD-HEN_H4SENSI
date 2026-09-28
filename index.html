@@ -52,7 +52,7 @@ if("serviceWorker" in navigator){
 }
 
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=5",{scope:"./"})
+  navigator.serviceWorker.register("./sw.js?v=6",{scope:"./"})
     .then(function(reg){
       if(reg.waiting){reg.waiting.postMessage({type:"SKIP_WAITING"});}
     })
@@ -136,51 +136,61 @@ function detectFirmware(){
     reason:exactUa?"exact firmware token found in PS4 user-agent":"firmware found in PS4 browser metadata"
   };
 }
-var VERIFY_KEY="h4sensi_verified_v1";
+var VERIFY_KEY="h4sensi_verified_v2";
+var HOST_BUILD="2026.09.28.2";
+var scanToken=0;
+var scanning=false;
+var readySnapshot=null;
 function loadVerified(){
   try{
     var raw=localStorage.getItem(VERIFY_KEY);
     if(!raw)return null;
     var data=JSON.parse(raw);
-    if(!data||data.origin!==location.origin)return null;
+    if(!data||data.origin!==location.origin||data.build!==HOST_BUILD)return null;
     return data;
   }catch(_){return null;}
 }
-function saveVerified(fw,engine,assets){
+function saveVerified(fw,engine,routePath,assets){
   try{
     localStorage.setItem(VERIFY_KEY,JSON.stringify({
       origin:location.origin,
       firmware:fw,
       engine:engine,
+      route:routePath,
       assets:assets,
+      ua:navigator.userAgent||"",
       verifiedAt:Date.now(),
-      build:"v1"
+      build:HOST_BUILD
     }));
   }catch(_){ }
 }
 function clearVerified(){
   try{localStorage.removeItem(VERIFY_KEY);}catch(_){ }
 }
-function checkPreviousVerification(fw,engine){
+function checkPreviousVerification(fw,engine,routePath){
   var old=loadVerified();
   if(!old)return {state:"NONE"};
-  if(old.firmware!==fw||old.engine!==engine){
-    terminalWrite("previous verification="+old.firmware+" / "+old.engine,"MEMORY");
-    terminalWrite("current detection="+fw+" / "+engine,"MEMORY");
-    terminalWrite("version changed; previous verification invalidated","MEMORY");
+  var same=old.firmware===fw&&old.engine===engine&&old.route===routePath&&old.ua===(navigator.userAgent||"");
+  if(!same){
+    terminalWrite("previous verification discarded: context changed","MEMORY");
     clearVerified();
     return {state:"MISMATCH",old:old};
   }
-  terminalWrite("previous verification matches current firmware","MEMORY");
+  terminalWrite("previous verification matches current context","MEMORY");
   return {state:"MATCH",old:old};
 }
-function head(path){
-  return fetch(path,{method:"GET",cache:"no-cache",credentials:"same-origin"})
-    .then(function(r){return r.ok;})
-    .catch(function(){return false;});
+function head(path,token){
+  var request=fetch(path,{method:"GET",cache:"no-cache",credentials:"same-origin"});
+  var timeout=new Promise(function(resolve){setTimeout(function(){resolve(false);},8000);});
+  return Promise.race([request.then(function(r){return !!r.ok;}).catch(function(){return false;}),timeout])
+    .then(function(ok){return token===scanToken&&ok;});
 }
 
 async function scan(){
+  var token=++scanToken;
+  scanning=true;
+  launch.disabled=true;
+  readySnapshot=null;
   var d=detectFirmware(), fw=d.fw, row=route(fw);
   if(d.signals.length)terminalWrite(d.signals.join(" | "),"DETECT");
   terminalWrite("confidence: "+d.confidence+" // "+d.reason,"DETECT");
@@ -191,17 +201,21 @@ async function scan(){
   hwEl.className="v "+(hwVerified?"ok":"warn");
 
   if(fw && !row){
+    scanning=false;
     engEl.textContent="UNAVAILABLE";
     engEl.className="v bad";
     pre.textContent="BLOCKED";
     pre.className="v bad";
     launch.disabled=true;
+    readySnapshot=null;
+    scanning=false;
     window.h4=null;
     terminalWrite("no exact route exists for detected firmware; refusing to guess","SAFETY");
     return;
   }
 
   if(d.confidence==="CONFLICT"){
+    scanning=false;
     engEl.textContent="CONFLICT";
     engEl.className="v bad";
     pre.textContent="BLOCKED";
@@ -213,11 +227,14 @@ async function scan(){
   }
 
   if(fw && !hwVerified){
+    scanning=false;
     engEl.textContent=row?row[0]:"UNAVAILABLE";
     engEl.className="v "+(row?"warn":"bad");
     pre.textContent="BLOCKED";
     pre.className="v bad";
     launch.disabled=true;
+    readySnapshot=null;
+    scanning=false;
     window.h4=null;
     terminalWrite("route blocked: firmware is not marked hardware-verified","SAFETY");
     terminalWrite("required status: VERIFIED_ON_HARDWARE","SAFETY");
@@ -225,6 +242,7 @@ async function scan(){
   }
 
   if(!fw){
+    scanning=false;
     engEl.textContent="UNDETECTED";
     engEl.className="v bad";
     pre.textContent="BLOCKED";
@@ -232,12 +250,14 @@ async function scan(){
     terminalWrite("firmware: "+(fw||"unknown"),"SCAN");
     terminalWrite("no verified firmware route","SCAN");
     launch.disabled=true;
+    readySnapshot=null;
+    scanning=false;
     return;
   }
 
   engEl.textContent=row[0];
   engEl.className="v ok";
-  var memory=checkPreviousVerification(fw,row[0]);
+  var memory=checkPreviousVerification(fw,row[0],row[1]);
   if(memory.state==="MISMATCH"){
     pre.textContent="RECHECK";
     pre.className="v warn";
@@ -250,11 +270,13 @@ async function scan(){
   terminalWrite("engine: "+row[0],"SCAN");
   terminalWrite("checking local assets...","SCAN");
 
-  var req=row[2],res=await Promise.all(req.map(head)),bad=[],i;
+  var req=row[2],res=await Promise.all(req.map(function(path){return head(path,token);})),bad=[],i;
+  if(token!==scanToken)return;
   terminalWrite("asset verification: "+req.length+" files","VERIFY");
   for(i=0;i<res.length;i++)if(!res[i])bad.push(req[i]);
 
   if(bad.length){
+    scanning=false;
     pre.textContent="INCOMPLETE";
     pre.className="v bad";
     terminalWrite("missing: "+bad.slice(0,5).join(", ")+(bad.length>5?" ...":""),"SCAN");
@@ -266,26 +288,43 @@ async function scan(){
   pre.textContent="READY";
   pre.className="v ok";
   terminalWrite("all required local assets found","VERIFY");
-  saveVerified(fw,row[0],req.length);
+  saveVerified(fw,row[0],row[1],req.length);
+  readySnapshot={firmware:fw,engine:row[0],route:row[1],ua:navigator.userAgent||"",build:HOST_BUILD};
+  scanning=false;
   terminalWrite("firmware + engine + assets verified","VERIFY");
   terminalWrite("verification saved for this firmware context","MEMORY");
   terminalWrite("route ready","SCAN");
+  scanning=false;
   launch.disabled=false;
   window.h4={fw:fw,row:row};
 }
 
 launch.onclick=function(){
-  var h=window.h4;
-  if(!h||launch.disabled)return;
+  var h=window.h4,now=detectFirmware();
+  if(!h||launch.disabled||scanning||!readySnapshot)return;
+  if(now.confidence==="CONFLICT"||now.fw!==readySnapshot.firmware||
+     readySnapshot.engine!==h.row[0]||readySnapshot.route!==h.row[1]||
+     readySnapshot.ua!==(navigator.userAgent||"")||readySnapshot.build!==HOST_BUILD){
+    terminalWrite("pre-initialize context changed; refusing to start","SAFETY");
+    pre.textContent="RECHECK";
+    pre.className="v warn";
+    launch.disabled=true;
+    window.h4=null;
+    readySnapshot=null;
+    scan();
+    return;
+  }
   launch.disabled=true;
+  window.h4=null;
+  readySnapshot=null;
   terminalWrite("initializing "+h.row[1],"LAUNCH");
   var s=document.createElement("script");
   s.type=h.row[3]?"module":"text/javascript";
   s.src=h.row[1];
   s.onerror=function(){
     terminalWrite("engine load failed","LAUNCH");
-    launch.disabled=false;
-    window.h4=null;
+    pre.textContent="ENGINE ERROR";
+    pre.className="v bad";
   };
   document.body.appendChild(s);
 };
