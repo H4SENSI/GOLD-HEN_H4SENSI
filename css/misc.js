@@ -16,6 +16,14 @@ const logger = {
     }
   },
   log(msg) {
+    try {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("h4sensi-log", {
+          detail: { source: "CSS", message: String(msg) }
+        }));
+      }
+    } catch (e) {}
+
     if (is_worker()) {
       self.postMessage({ type: "log", value: "[" + self.name + "]" + msg });
       return;
