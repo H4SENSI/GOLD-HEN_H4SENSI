@@ -119,13 +119,14 @@ async function scan(){
   }
 
   if(row[0]==="LEGACY"){
-    engEl.textContent="LEGACY / ENGINE PENDING";
+    var legacyApi=window.H4SENSI_LEGACY_ENGINE||null;
+    engEl.textContent=legacyApi?"LEGACY / ENGINE REGISTERED":"LEGACY / ENGINE PENDING";
     engEl.className="v warn";
     pre.textContent="DETECTED";
     pre.className="v warn";
     terminalWrite("legacy firmware detected: "+fw,"SCAN");
-    terminalWrite("local legacy engine not installed yet","SCAN");
-    terminalWrite("launch blocked to prevent invalid chain execution","SCAN");
+    terminalWrite(legacyApi?"legacy engine interface registered":"local legacy engine not installed yet","SCAN");
+    terminalWrite("launch blocked until a compatible implementation is supplied","SCAN");
     launch.disabled=true;
     window.h4={fw:fw,row:row};
     return;
