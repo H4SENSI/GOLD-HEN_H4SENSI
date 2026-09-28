@@ -1,14 +1,28 @@
-const CACHE_NAME = "h4sensi-offline-v1";
+const CACHE_NAME = "h4sensi-offline-v2";
 const SHELL = [
   "./",
   "./index.html",
-  "./cache.html"
+  "./cache.html",
+  "./sw.js"
 ];
+
+async function cacheRequest(cache, request) {
+  try {
+    const response = await fetch(request, { cache: "no-store" });
+    if (!response || !response.ok) return false;
+    await cache.put(request, response.clone());
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(SHELL))
+      .then((cache) =>
+        Promise.all(SHELL.map((path) => cacheRequest(cache, path)))
+      )
       .then(() => self.skipWaiting())
   );
 });
@@ -19,7 +33,11 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== CACHE_NAME && key.startsWith("h4sensi-offline-"))
+            .filter(
+              (key) =>
+                key.startsWith("h4sensi-offline-") &&
+                key !== CACHE_NAME
+            )
             .map((key) => caches.delete(key))
         )
       )
@@ -28,7 +46,22 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+  if (!event.data) return;
+
+  if (event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+    return;
+  }
+
+  if (event.data.type === "CACHE_URLS" && Array.isArray(event.data.urls)) {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        for (const url of event.data.urls) {
+          await cacheRequest(cache, url);
+        }
+      })
+    );
+  }
 });
 
 self.addEventListener("fetch", (event) => {
@@ -39,22 +72,26 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(request)
-      .then((response) => {
+    caches.match(request).then(async (cached) => {
+      if (cached) return cached;
+
+      try {
+        const response = await fetch(request);
+
         if (response && response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(request, response.clone()).catch(() => {});
         }
+
         return response;
-      })
-      .catch(() =>
-        caches.match(request).then((cached) => {
-          if (cached) return cached;
-          if (request.mode === "navigate") {
-            return caches.match("./index.html");
-          }
-          return Response.error();
-        })
-      )
+      } catch (error) {
+        if (request.mode === "navigate") {
+          const shell = await caches.match("./index.html");
+          if (shell) return shell;
+        }
+
+        throw error;
+      }
+    })
   );
 });
