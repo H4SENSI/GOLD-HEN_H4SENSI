@@ -115,6 +115,44 @@ function detectFirmware(){
     reason:"firmware confirmed by "+versions[v]+" browser signal"+(versions[v]===1?"":"s")
   };
 }
+var VERIFY_KEY="h4sensi_verified_v1";
+function loadVerified(){
+  try{
+    var raw=localStorage.getItem(VERIFY_KEY);
+    if(!raw)return null;
+    var data=JSON.parse(raw);
+    if(!data||data.origin!==location.origin)return null;
+    return data;
+  }catch(_){return null;}
+}
+function saveVerified(fw,engine,assets){
+  try{
+    localStorage.setItem(VERIFY_KEY,JSON.stringify({
+      origin:location.origin,
+      firmware:fw,
+      engine:engine,
+      assets:assets,
+      verifiedAt:Date.now(),
+      build:"v1"
+    }));
+  }catch(_){ }
+}
+function clearVerified(){
+  try{localStorage.removeItem(VERIFY_KEY);}catch(_){ }
+}
+function checkPreviousVerification(fw,engine){
+  var old=loadVerified();
+  if(!old)return {state:"NONE"};
+  if(old.firmware!==fw||old.engine!==engine){
+    terminalWrite("previous verification="+old.firmware+" / "+old.engine,"MEMORY");
+    terminalWrite("current detection="+fw+" / "+engine,"MEMORY");
+    terminalWrite("version changed; previous verification invalidated","MEMORY");
+    clearVerified();
+    return {state:"MISMATCH",old:old};
+  }
+  terminalWrite("previous verification matches current firmware","MEMORY");
+  return {state:"MATCH",old:old};
+}
 function head(path){
   return fetch(path,{method:"GET",cache:"no-cache",credentials:"same-origin"})
     .then(function(r){return r.ok;})
@@ -152,6 +190,13 @@ async function scan(){
 
   engEl.textContent=row[0];
   engEl.className="v ok";
+  var memory=checkPreviousVerification(fw,row[0]);
+  if(memory.state==="MISMATCH"){
+    pre.textContent="RECHECK";
+    pre.className="v warn";
+    launch.disabled=true;
+    terminalWrite("old firmware context discarded; performing fresh asset verification","MEMORY");
+  }
   pre.textContent="CHECKING";
   pre.className="v warn";
   terminalWrite("firmware: "+fw,"SCAN");
@@ -174,7 +219,9 @@ async function scan(){
   pre.textContent="READY";
   pre.className="v ok";
   terminalWrite("all required local assets found","VERIFY");
+  saveVerified(fw,row[0],req.length);
   terminalWrite("firmware + engine + assets verified","VERIFY");
+  terminalWrite("verification saved for this firmware context","MEMORY");
   terminalWrite("route ready","SCAN");
   launch.disabled=false;
   window.h4={fw:fw,row:row};
