@@ -33,7 +33,7 @@ h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:
 <button class="btn" id="scan">RESCAN</button>
 <button class="btn primary" id="launch" disabled>INITIALIZE</button>
 </div>
-<div class="supported"><span class="label">CONFIGURED FIRMWARE</span><span class="v">7.00 · 7.01 · 7.02 · 7.50 · 7.51 · 7.55 · 8.00 · 8.01 · 8.03 · 8.50 · 8.52 · 13.02 · 13.04 · 13.50 · 13.52</span><span class="label" style="margin-top:10px">HARDWARE VERIFIED</span><span class="v ok">13.02 · 13.52</span></div>
+<div class="supported"><span class="label">ROUTES CONFIGURED / SAFETY-GATED</span><span class="v">7.00 · 7.01 · 7.02 · 7.50 · 7.51 · 7.55 · 8.00 · 8.01 · 8.03 · 8.50 · 8.52 · 13.02 · 13.04 · 13.50 · 13.52</span><span class="label" style="margin-top:10px">INITIALIZE ALLOWED</span><span class="v ok">13.02 · 13.52</span></div>
 </section>
 </main>
 <script>
@@ -52,7 +52,7 @@ if("serviceWorker" in navigator){
 }
 
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=4",{scope:"./"})
+  navigator.serviceWorker.register("./sw.js?v=5",{scope:"./"})
     .then(function(reg){
       if(reg.waiting){reg.waiting.postMessage({type:"SKIP_WAITING"});}
     })
@@ -80,40 +80,60 @@ function route(v){
   if(FSLOP[v])return ["SLOPKIT"].concat(slop(v));
   return null;
 }
-function detectFirmware(){
-  var sources=[
-    {name:"USER_AGENT",value:navigator.userAgent||""},
-    {name:"APP_VERSION",value:navigator.appVersion||""}
-  ];
-  var versions={},signals=[],i,m,v;
+function extractFirmwareSignals(value){
+  var out=[],re=/PlayStation\s*4(?:[/ ]+|%2F)(\d+)\.(\d+)/ig,m;
+  value=String(value||"");
+  while((m=re.exec(value))!==null){
+    var v=m[1]+"."+m[2];
+    if(out.indexOf(v)===-1)out.push(v);
+  }
+  return out;
+}
 
-  for(i=0;i<sources.length;i++){
-    m=/PlayStation\s*4(?:[/ ]+|%2F)(\d+)\.(\d+)/i.exec(sources[i].value);
-    if(m){
-      v=m[1]+"."+m[2];
-      versions[v]=(versions[v]||0)+1;
-      signals.push(sources[i].name+"="+v);
-    }
+function detectFirmware(){
+  var ua=String(navigator.userAgent||"");
+  var app=String(navigator.appVersion||"");
+  var platform=String(navigator.platform||"");
+  var uaVersions=extractFirmwareSignals(ua);
+  var appVersions=extractFirmwareSignals(app);
+  var versions={},signals=[],i;
+
+  if(uaVersions.length){
+    signals.push("USER_AGENT="+uaVersions.join(","));
+    for(i=0;i<uaVersions.length;i++)versions[uaVersions[i]]=1;
+  }
+  if(appVersions.length){
+    signals.push("APP_VERSION="+appVersions.join(","));
+    for(i=0;i<appVersions.length;i++)versions[appVersions[i]]=1;
   }
 
-  var platform=String(navigator.platform||"");
-  var isPS4=/PlayStation\s*4/i.test(platform)||/PlayStation\s*4/i.test(navigator.userAgent||"");
+  var isPS4=/PlayStation\s*4/i.test(platform)||/PlayStation\s*4/i.test(ua);
   if(platform)signals.push("PLATFORM="+platform);
+
+  if(uaVersions.length>1||appVersions.length>1){
+    return {fw:null,confidence:"CONFLICT",signals:signals,reason:"multiple firmware versions found in browser metadata"};
+  }
+
+  if(!isPS4){
+    return {fw:null,confidence:"NONE",signals:signals,reason:"PS4 platform not detected"};
+  }
 
   var keys=Object.keys(versions);
   if(keys.length>1){
     return {fw:null,confidence:"CONFLICT",signals:signals,reason:"firmware signals disagree"};
   }
+
   if(!keys.length){
-    return {fw:null,confidence:isPS4?"LOW":"NONE",signals:signals,reason:isPS4?"PS4 detected but firmware string missing":"PS4 platform not detected"};
+    return {fw:null,confidence:"LOW",signals:signals,reason:"PS4 detected but firmware string missing"};
   }
 
-  v=keys[0];
+  var v=keys[0];
+  var crossConfirmed=uaVersions.length===1&&appVersions.length===1&&uaVersions[0]===appVersions[0];
   return {
     fw:v,
-    confidence:versions[v]>=2?"HIGH":"MEDIUM",
+    confidence:crossConfirmed?"HIGH":"MEDIUM",
     signals:signals,
-    reason:"firmware confirmed by "+versions[v]+" browser signal"+(versions[v]===1?"":"s")
+    reason:crossConfirmed?"firmware consistent across browser metadata":"firmware found in PS4 metadata"
   };
 }
 var VERIFY_KEY="h4sensi_verified_v1";
