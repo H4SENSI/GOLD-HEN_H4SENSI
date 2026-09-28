@@ -214,6 +214,19 @@ async function scan(){
     return;
   }
 
+  if(d.confidence!=="EXACT"){
+    scanning=false;
+    engEl.textContent=row?row[0]:"UNAVAILABLE";
+    engEl.className="v warn";
+    pre.textContent="BLOCKED";
+    pre.className="v bad";
+    launch.disabled=true;
+    readySnapshot=null;
+    window.h4=null;
+    terminalWrite("exact PS4 firmware token not confirmed in User-Agent; refusing to start","SAFETY");
+    return;
+  }
+
   if(d.confidence==="CONFLICT"){
     scanning=false;
     engEl.textContent="CONFLICT";
