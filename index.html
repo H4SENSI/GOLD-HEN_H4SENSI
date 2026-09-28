@@ -48,6 +48,24 @@ NO MANUAL FIRMWARE SELECTION. NO FALLBACK ROUTES. NO GUESSING.
 (function(){
 "use strict";
 
+var fwEl=document.getElementById("fw"),engEl=document.getElementById("engine"),pre=document.getElementById("pre"),hwEl=document.getElementById("hw"),term=document.getElementById("term"),launch=document.getElementById("launch");
+var terminalLines=[];
+var terminalMax=180;
+
+function terminalWrite(message,source){
+  var text=String(message==null?"":message).replace(/\r/g,"");
+  text.split("\n").forEach(function(line){
+    if(!line)return;
+    var stamp=new Date().toTimeString().slice(0,8);
+    terminalLines.push("["+stamp+"] "+(source?"["+source+"] ":"")+line);
+  });
+  if(terminalLines.length>terminalMax)terminalLines=terminalLines.slice(-terminalMax);
+  term.textContent=terminalLines.join("\n");
+  term.scrollTop=term.scrollHeight;
+}
+
+
+
 if("serviceWorker" in navigator){
   navigator.serviceWorker.addEventListener("message",function(event){
     var d=event.data||{};
@@ -145,7 +163,7 @@ function detectFirmware(){
   };
 }
 var VERIFY_KEY="h4sensi_verified_v2";
-var HOST_BUILD="2026.09.28.4";
+var HOST_BUILD="2026.09.28.5";
 var scanToken=0;
 var scanning=false;
 var readySnapshot=null;
@@ -189,24 +207,54 @@ function checkPreviousVerification(fw,engine,routePath){
 }
 function head(path,token,attempt){
   attempt=attempt||1;
-  var request=fetch(path,{method:"GET",cache:"no-cache",credentials:"same-origin"})
-    .then(function(r){
-      if(!r.ok)return false;
-      var len=Number(r.headers.get("content-length")||"0");
-      if(len===0)return true;
-      return r.arrayBuffer().then(function(buf){return buf.byteLength>0;}).catch(function(){return false;});
-    })
-    .catch(function(){return false;});
-  var timeout=new Promise(function(resolve){setTimeout(function(){resolve(false);},8000);});
-  return Promise.race([request,timeout]).then(function(ok){
+  if(token!==scanToken)return Promise.resolve(false);
+
+  function viaFetch(){
+    if(!window.fetch)return Promise.resolve(null);
+    var request;
+    try{
+      request=fetch(path,{method:"GET",cache:"no-cache",credentials:"same-origin"})
+        .then(function(r){
+          if(!r.ok)return false;
+          return r.arrayBuffer().then(function(buf){return buf.byteLength>0;}).catch(function(){
+            var len=Number(r.headers.get("content-length")||"0");
+            return len>0;
+          });
+        })
+        .catch(function(){return false;});
+    }catch(_){return Promise.resolve(null);}
+    var timeout=new Promise(function(resolve){setTimeout(function(){resolve(false);},5000);});
+    return Promise.race([request,timeout]);
+  }
+
+  function viaXHR(){
+    return new Promise(function(resolve){
+      var done=false,xhr=null;
+      function finish(ok){if(done)return;done=true;try{if(xhr)xhr.abort();}catch(_){}resolve(!!ok);}
+      try{
+        xhr=new XMLHttpRequest();
+        xhr.open("GET",path,true);
+        xhr.timeout=5000;
+        xhr.onload=function(){finish(xhr.status>=200&&xhr.status<400);};
+        xhr.onerror=function(){finish(false);};
+        xhr.ontimeout=function(){finish(false);};
+        try{xhr.responseType="arraybuffer";}catch(_){}
+        xhr.send();
+      }catch(_){finish(false);}
+    });
+  }
+
+  return viaFetch().then(function(ok){
+    return ok===null?viaXHR():ok;
+  }).then(function(ok){
     if(ok&&token===scanToken)return true;
     if(token!==scanToken)return false;
-    if(attempt<2)return new Promise(function(resolve){setTimeout(resolve,350);}).then(function(){return head(path,token,attempt+1);});
+    if(attempt<2)return new Promise(function(resolve){setTimeout(resolve,250);}).then(function(){return head(path,token,attempt+1);});
     return false;
   });
 }
 
-async function scan(){
+function scan(){
   var token=++scanToken;
   scanning=true;
   launch.disabled=true;
@@ -303,12 +351,30 @@ async function scan(){
   terminalWrite("engine: "+row[0],"SCAN");
   terminalWrite("checking local assets...","SCAN");
 
-  var req=row[2],res=await Promise.all(req.map(function(path){return head(path,token);})),bad=[],i;
-  if(token!==scanToken)return;
+  var req=row[2],bad=[],i;
   terminalWrite("asset verification: "+req.length+" files","VERIFY");
-  for(i=0;i<res.length;i++)if(!res[i])bad.push(req[i]);
 
-  if(bad.length){
+  function failScan(){
+    if(token!==scanToken)return;
+    scanning=false;
+    pre.textContent="INCOMPLETE";
+    pre.className="v bad";
+    terminalWrite("route blocked: local asset verification failed","VERIFY");
+    launch.disabled=true;
+    window.h4=null;
+    readySnapshot=null;
+  }
+
+  Promise.all(req.map(function(path,idx){
+    terminalWrite("checking "+(idx+1)+"/"+req.length+" "+path,"ASSET");
+    return head(path,token).then(function(ok){
+      if(!ok)bad.push(path);
+      return ok;
+    });
+  })).then(function(){
+    if(token!==scanToken)return;
+
+    if(bad.length){
     scanning=false;
     pre.textContent="INCOMPLETE";
     pre.className="v bad";
@@ -329,7 +395,12 @@ async function scan(){
   terminalWrite("route ready","SCAN");
   scanning=false;
   launch.disabled=false;
-  window.h4={fw:fw,row:row};
+    window.h4={fw:fw,row:row};
+  }).catch(function(){
+    if(token!==scanToken)return;
+    terminalWrite("asset verification runtime error","VERIFY");
+    failScan();
+  });
 }
 
 launch.onclick=function(){
@@ -361,22 +432,6 @@ launch.onclick=function(){
   };
   document.body.appendChild(s);
 };
-
-var fwEl=document.getElementById("fw"),engEl=document.getElementById("engine"),pre=document.getElementById("pre"),hwEl=document.getElementById("hw"),term=document.getElementById("term"),launch=document.getElementById("launch");
-var terminalLines=[];
-var terminalMax=180;
-
-function terminalWrite(message,source){
-  var text=String(message==null?"":message).replace(/\r/g,"");
-  text.split("\n").forEach(function(line){
-    if(!line)return;
-    var stamp=new Date().toTimeString().slice(0,8);
-    terminalLines.push("["+stamp+"] "+(source?"["+source+"] ":"")+line);
-  });
-  if(terminalLines.length>terminalMax)terminalLines=terminalLines.slice(-terminalMax);
-  term.textContent=terminalLines.join("\n");
-  term.scrollTop=term.scrollHeight;
-}
 
 window.H4SENSI_LOG=function(message,source){
   terminalWrite(message,source||"ENGINE");
