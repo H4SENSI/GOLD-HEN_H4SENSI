@@ -2575,12 +2575,8 @@ let allDone = false,
             const SITES = [];
             if (DO_PATCH) {
               try {
-                const embedded = embeddedKPatch(KPATCH_FILE);
-                if (embedded) kpatchBlob = embedded;
-                else {
-                  const r = await fetch(KPATCH_FILE);
-                  if (r.ok) kpatchBlob = new Uint8Array(await r.arrayBuffer());
-                }
+                const r = await fetch(KPATCH_FILE, { cache: "no-store", credentials: "same-origin" });
+                if (r.ok) kpatchBlob = new Uint8Array(await r.arrayBuffer());
               } catch (e) {
                 mark("KPATCH-FETCH-THREW", (e && e.message) || String(e));
               }
