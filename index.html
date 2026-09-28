@@ -137,7 +137,7 @@ function detectFirmware(){
   };
 }
 var VERIFY_KEY="h4sensi_verified_v2";
-var HOST_BUILD="2026.09.28.2";
+var HOST_BUILD="2026.09.28.3";
 var scanToken=0;
 var scanning=false;
 var readySnapshot=null;
@@ -179,11 +179,23 @@ function checkPreviousVerification(fw,engine,routePath){
   terminalWrite("previous verification matches current context","MEMORY");
   return {state:"MATCH",old:old};
 }
-function head(path,token){
-  var request=fetch(path,{method:"GET",cache:"no-cache",credentials:"same-origin"});
+function head(path,token,attempt){
+  attempt=attempt||1;
+  var request=fetch(path,{method:"GET",cache:"no-cache",credentials:"same-origin"})
+    .then(function(r){
+      if(!r.ok)return false;
+      var len=Number(r.headers.get("content-length")||"0");
+      if(len===0)return true;
+      return r.arrayBuffer().then(function(buf){return buf.byteLength>0;}).catch(function(){return false;});
+    })
+    .catch(function(){return false;});
   var timeout=new Promise(function(resolve){setTimeout(function(){resolve(false);},8000);});
-  return Promise.race([request.then(function(r){return !!r.ok;}).catch(function(){return false;}),timeout])
-    .then(function(ok){return token===scanToken&&ok;});
+  return Promise.race([request,timeout]).then(function(ok){
+    if(ok&&token===scanToken)return true;
+    if(token!==scanToken)return false;
+    if(attempt<2)return new Promise(function(resolve){setTimeout(resolve,350);}).then(function(){return head(path,token,attempt+1);});
+    return false;
+  });
 }
 
 async function scan(){
@@ -370,6 +382,21 @@ window.addEventListener("h4sensi-log",function(event){
 terminalWrite("terminal online","BOOT");
 
 document.getElementById("scan").onclick=scan;
+
+window.addEventListener("pageshow",function(event){
+  if(event.persisted&&!scanning){
+    terminalWrite("page restored; forcing fresh firmware/context scan","SAFETY");
+    window.h4=null;
+    readySnapshot=null;
+    scan();
+  }
+});
+
+window.addEventListener("beforeunload",function(){
+  window.h4=null;
+  readySnapshot=null;
+});
+
 scan();
 })();
 </script>
