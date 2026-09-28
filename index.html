@@ -58,7 +58,7 @@ if("serviceWorker" in navigator){
 }
 
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js",{scope:"./"})
+  navigator.serviceWorker.register("./sw.js?v=3",{scope:"./"})
     .then(function(reg){
       var state=document.getElementById("cacheState");
       if(state)state.textContent="CACHE ONLINE";
