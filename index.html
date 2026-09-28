@@ -24,7 +24,7 @@ h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:
 <div class="grid">
 <div class="cell"><span class="label">FIRMWARE</span><span class="v" id="fw">SCANNING</span></div>
 <div class="cell"><span class="label">ENGINE</span><span class="v" id="engine">SCANNING</span></div>
-<div class="cell"><span class="label">PRECHECK</span><span class="v" id="pre">WAITING</span></div><div class="cell"><span class="label">ROUTE STATUS</span><span class="v" id="hw">CHECKING</span></div>
+<div class="cell"><span class="label">PRECHECK</span><span class="v" id="pre">WAITING</span></div><div class="cell"><span class="label">ROUTE STATUS</span><span class="v" id="hw">CHECKING</span></div><div class="cell"><span class="label">EXECUTION</span><span class="v" id="exec">IDLE</span></div>
 </div>
 <div class="term" id="term" role="log" aria-live="polite">$ H4SENSI
 [BOOT] terminal online
@@ -48,9 +48,44 @@ NO MANUAL FIRMWARE SELECTION. NO FALLBACK ROUTES. NO GUESSING.
 (function(){
 "use strict";
 
-var fwEl=document.getElementById("fw"),engEl=document.getElementById("engine"),pre=document.getElementById("pre"),hwEl=document.getElementById("hw"),term=document.getElementById("term"),launch=document.getElementById("launch");
+var fwEl=document.getElementById("fw"),engEl=document.getElementById("engine"),pre=document.getElementById("pre"),hwEl=document.getElementById("hw"),execEl=document.getElementById("exec"),term=document.getElementById("term"),launch=document.getElementById("launch");
 var terminalLines=[];
 var terminalMax=180;
+var lastEngineVerdict=null;
+var lastProofSummary=null;
+
+function setExecution(text,className){
+  if(!execEl)return;
+  execEl.textContent=text;
+  execEl.className="v "+(className||"");
+}
+
+function consumeEngineLog(message){
+  var s=String(message==null?"":message);
+  var m=s.match(/EG-VERDICT\s+.*?jailbroken=(\d+)\s+kpatched=(\d+)\s+payload_running=(\d+)/i);
+  if(m){
+    lastEngineVerdict={jailbroken:m[1]==="1",kpatched:m[2]==="1",payloadRunning:m[3]==="1"};
+    var v=lastEngineVerdict;
+    if(v.jailbroken&&v.kpatched&&v.payloadRunning)setExecution("RUNTIME VERIFIED","ok");
+    else setExecution("RUNTIME FAILED","bad");
+    return;
+  }
+  m=s.match(/PROOF-SUMMARY-FINAL\s+pass=(\d+)\s+fail=(\d+)/i);
+  if(m){
+    lastProofSummary={pass:Number(m[1]),fail:Number(m[2])};
+    if(lastProofSummary.fail===0&&lastEngineVerdict&&lastEngineVerdict.jailbroken&&lastEngineVerdict.kpatched&&lastEngineVerdict.payloadRunning){
+      setExecution("SUCCESS","ok");
+      terminalWrite("runtime proof complete: jailbreak + kpatch + payload confirmed","VERIFY");
+    }else{
+      setExecution("FAILED "+lastProofSummary.pass+"/"+(lastProofSummary.pass+lastProofSummary.fail),"bad");
+      terminalWrite("runtime proof failed: no valid jailbreak completion state","VERIFY");
+    }
+  }else if(/PROOF-FAIL|\bTHREW\b|ENGINE LOAD FAILED/i.test(s)){
+    setExecution("FAILED","bad");
+  }else if(/PAYLOAD-RUN\s+pthread_create=0\s+handle=/i.test(s)){
+    setExecution("PAYLOAD STARTED","warn");
+  }
+}
 
 function terminalWrite(message,source){
   var text=String(message==null?"":message).replace(/\r/g,"");
@@ -163,7 +198,7 @@ function detectFirmware(){
   };
 }
 var VERIFY_KEY="h4sensi_verified_v2";
-var HOST_BUILD="2026.09.28.6";
+var HOST_BUILD="2026.09.28.7";
 var scanToken=0;
 var scanning=false;
 var readySnapshot=null;
@@ -257,6 +292,9 @@ function head(path,token,attempt){
 function scan(){
   var token=++scanToken;
   scanning=true;
+  lastEngineVerdict=null;
+  lastProofSummary=null;
+  setExecution("IDLE","");
   launch.disabled=true;
   readySnapshot=null;
   var d=detectFirmware(), fw=d.fw, row=route(fw);
@@ -415,12 +453,18 @@ launch.onclick=function(){
     launch.disabled=true;
     window.h4=null;
     readySnapshot=null;
+    lastEngineVerdict=null;
+    lastProofSummary=null;
+    setExecution("IDLE","");
     scan();
     return;
   }
   launch.disabled=true;
   window.h4=null;
   readySnapshot=null;
+  lastEngineVerdict=null;
+  lastProofSummary=null;
+  setExecution("RUNNING","warn");
   terminalWrite("initializing "+h.row[1],"LAUNCH");
   var s=document.createElement("script");
   s.type=h.row[3]?"module":"text/javascript";
@@ -429,17 +473,21 @@ launch.onclick=function(){
     terminalWrite("engine load failed","LAUNCH");
     pre.textContent="ENGINE ERROR";
     pre.className="v bad";
+    setExecution("ENGINE ERROR","bad");
   };
   document.body.appendChild(s);
 };
 
 window.H4SENSI_LOG=function(message,source){
+  consumeEngineLog(message);
   terminalWrite(message,source||"ENGINE");
 };
 
 window.addEventListener("h4sensi-log",function(event){
   var detail=event.detail||{};
-  terminalWrite(detail.message==null?detail.value:detail.message,detail.source||"ENGINE");
+  var message=detail.message==null?detail.value:detail.message;
+  consumeEngineLog(message);
+  terminalWrite(message,detail.source||"ENGINE");
 });
 
 terminalWrite("terminal online","BOOT");
@@ -458,6 +506,8 @@ window.addEventListener("pageshow",function(event){
 window.addEventListener("beforeunload",function(){
   window.h4=null;
   readySnapshot=null;
+  lastEngineVerdict=null;
+  lastProofSummary=null;
 });
 
 scan();
