@@ -25,7 +25,7 @@ function send(controller){
   if(sent||!controller)return;
   sent=true;
   status.textContent="Caching every local host asset...";
-  controller.postMessage({type:"PRECACHE_NOW"});
+  controller.postMessage({type:"CACHE_URLS",urls:["./","./index.html","./cache.html","./sw.js","./700/alert.js","./700/config.js","./700/kpatch/700.elf","./700/kpatch/750.elf","./700/kpatch/800.elf","./700/kpatch/850.elf","./700/lapse.js","./700/lapse/700.js","./700/lapse/750.js","./700/lapse/751.js","./700/lapse/800.js","./700/lapse/850.js","./700/lapse/852.js","./700/module/chain.js","./700/module/int64.js","./700/module/mem.js","./700/module/memtools.js","./700/module/offset.js","./700/module/rw.js","./700/module/utils.js","./700/module/view.js","./700/psfree.js","./700/rop/700.js","./700/rop/750.js","./700/rop/800.js","./700/rop/850.js","./700/send.js","./900/alert.js","./900/config.js","./900/lapse.js","./900/lapse/900.js","./900/lapse/903.js","./900/lapse/950.js","./900/module/chain.js","./900/module/constants.js","./900/module/int64.js","./900/module/mem.js","./900/module/memtools.js","./900/module/offset.js","./900/module/rw.js","./900/module/utils.js","./900/module/view.js","./900/psfree.js","./900/rop/900.js","./900/rop/950.js","./900/send.js","./cache.manifest","./core.js","./css/lapse.js","./css/loader.js","./css/main.js","./css/misc.js","./css/ps4/constants.js","./css/ps4/kernel.js","./css/ps4/patches/1000.bin","./css/ps4/userland.js","./css/worker.js","./css/workers.js","./goldhen.bin","./goldhen_2.4b18.12.bin","./int64.js","./jb.html","./jb.js","./mem.js","./patches/1302.bin","./patches/1350.bin","./patches/1352.bin","./ps4_offsets.js","./rpc_worker.js"]});
 }
 if(!("serviceWorker" in navigator)){
   status.className="bad";
