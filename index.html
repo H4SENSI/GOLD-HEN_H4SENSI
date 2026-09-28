@@ -70,7 +70,6 @@ if("serviceWorker" in navigator){
     .catch(function(){});
 }
 
-var FLEGACY={"5.05":1,"5.07":1,"6.71":1,"6.72":1};
 var F700={"7.00":1,"7.01":1,"7.02":1,"7.50":1,"7.51":1,"7.55":1,"8.00":1,"8.01":1,"8.03":1,"8.50":1,"8.52":1};
 var F900={"9.00":1,"9.03":1,"9.04":1,"9.50":1,"9.51":1,"9.60":1};
 var FCSS={"10.00":1,"10.01":1,"10.50":1,"10.70":1,"10.71":1,"11.00":1,"11.02":1};
@@ -85,7 +84,6 @@ function slop(v){
   return ["jb.js",["jb.js","core.js","mem.js","int64.js","rpc_worker.js","ps4_offsets.js","goldhen_2.4b18.12.bin",p],1];
 }
 function route(v){
-  if(FLEGACY[v])return ["LEGACY",null,[],0];
   if(F700[v])return ["700"].concat(A700);
   if(F900[v])return ["900"].concat(A900);
   if(FCSS[v])return ["CSS"].concat(ACSS);
@@ -115,20 +113,6 @@ async function scan(){
     terminalWrite("firmware: "+(fw||"unknown"),"SCAN");
     terminalWrite("no exact local route","SCAN");
     launch.disabled=true;
-    return;
-  }
-
-  if(row[0]==="LEGACY"){
-    var legacyApi=window.H4SENSI_LEGACY_ENGINE||null;
-    engEl.textContent=legacyApi?"LEGACY / ENGINE REGISTERED":"LEGACY / ENGINE PENDING";
-    engEl.className="v warn";
-    pre.textContent="DETECTED";
-    pre.className="v warn";
-    terminalWrite("legacy firmware detected: "+fw,"SCAN");
-    terminalWrite(legacyApi?"legacy engine interface registered":"local legacy engine not installed yet","SCAN");
-    terminalWrite("launch blocked until a compatible implementation is supplied","SCAN");
-    launch.disabled=true;
-    window.h4={fw:fw,row:row};
     return;
   }
 
