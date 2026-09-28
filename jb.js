@@ -78,6 +78,13 @@ function mark(tag, detail) {
     outEl.scrollTop = outEl.scrollHeight;
   }
   post(tag, raw);
+  try {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("h4sensi-log", {
+        detail: { source: "SLOPKIT", message: tag + (detail == null || detail === "" ? "" : "  " + detail) }
+      }));
+    }
+  } catch (e) {}
 }
 
 function trace(tag, detail) {
