@@ -10,3 +10,10 @@ Launcher web para PS4.
 - Host: H4SENSI GitHub Pages
 - Incluye cache offline mediante Service Worker.
 - **Tasa de éxito observada:** 9/10 (**90%**) en 10 pruebas realizadas en una PS4 con firmware 13.52.
+
+
+## DIAGNOSTICS
+
+Panel independiente para revisar navegador, estado online/offline, almacenamiento local, Secure Context y Service Worker sin iniciar ninguna ruta de ejecución.
+
+**Abrir:** https://h4sensi.github.io/GOLD-HEN_H4SENSI/diagnostics.html
