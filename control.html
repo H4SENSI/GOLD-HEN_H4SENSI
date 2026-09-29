@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#030608">
+<title>H4SENSI // CONTROL CENTER</title>
+<style>
+:root{color-scheme:dark;--bg:#030608;--panel:#071015;--panel2:#09131a;--line:#17303b;--text:#e8fff1;--muted:#71828c;--dim:#3b4b54;--green:#5cff9a;--amber:#ffd166;--red:#ff6675;--cyan:#7ee7ff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",monospace}
+body{background-image:linear-gradient(rgba(92,255,154,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(92,255,154,.028) 1px,transparent 1px);background-size:28px 28px}
+main{width:min(1120px,94vw);margin:auto;padding:18px 0 34px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);padding:11px 13px;background:rgba(3,6,8,.92);position:sticky;top:0;z-index:5;backdrop-filter:blur(9px)}
+.brand{font-weight:900;letter-spacing:.2em}.build{font-size:10px;color:var(--muted)}
+.hero{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:30px 0 18px}.hero h1{margin:0;font-weight:500;font-size:clamp(34px,7vw,68px);line-height:.88;letter-spacing:-.07em}.hero p{margin:0;max-width:470px;color:var(--muted);font-size:12px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line)}.card{background:var(--panel);padding:14px;min-height:82px}.label{display:block;color:var(--dim);font-size:10px;letter-spacing:.13em;margin-bottom:7px}.value{font-size:13px;font-weight:800}.ok{color:var(--green)}.warn{color:var(--amber)}.bad{color:var(--red)}.cyan{color:var(--cyan)}
+.panel{margin-top:18px;border:1px solid var(--line);background:var(--panel)}.panelhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid var(--line)}.panelhead strong{font-size:11px;letter-spacing:.11em}
+.actions{display:flex;flex-wrap:wrap;gap:8px;padding:12px 13px;border-bottom:1px solid var(--line)}button,.linkbtn{appearance:none;text-decoration:none;border:1px solid var(--line);background:#0a1218;color:var(--text);padding:10px 12px;font:700 11px inherit;cursor:pointer}.linkbtn{display:inline-block}.primary{background:var(--green);color:#001108;border-color:var(--green)}button:hover,.linkbtn:hover{border-color:#396877}.primary:hover{border-color:var(--green)}
+.term{height:290px;overflow:auto;padding:14px;color:#8ca198;font-size:11px;line-height:1.55;white-space:pre-wrap}.term .good{color:var(--green)}.term .bad{color:var(--red)}.term .note{color:var(--muted)}.term .cyan{color:var(--cyan)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.list{padding:12px 13px}.row{display:flex;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #10242d;font-size:11px}.row:last-child{border-bottom:0}.row span:first-child{color:var(--muted)}.row span:last-child{text-align:right;font-weight:800}
+.matrix{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 13px}.fw{border:1px solid var(--line);padding:11px;background:var(--panel2)}.fw strong{display:block;font-size:14px;margin-bottom:5px}.fw span{display:block;font-size:9px;line-height:1.5;color:var(--muted)}.fw.tested{border-color:var(--green)}.fw.tested span{color:var(--green)}.fw.proven{border-color:#4a7b8b}.fw.proven span{color:#8fc2d0}.fw.doc{border-color:#725c25}.fw.doc span{color:var(--amber)}
+footer{margin-top:16px;color:var(--dim);font-size:9px;line-height:1.5;text-align:center}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}.matrix{grid-template-columns:1fr}}
+@media(max-width:470px){.grid{grid-template-columns:1fr}.actions>*{flex:1 1 100%}}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><span class="brand">H4SENSI</span><span class="build">CONTROL CENTER // BUILD 2026.09.29.1</span></header>
+<section class="hero">
+<div><h1>CONTROL<br>CENTER</h1></div>
+<p>Herramientas locales para comprobar el entorno, mantener la sesión limpia y entrar al host principal. Esta página no ejecuta ninguna cadena de explotación por sí sola.</p>
+</section>
+
+<section class="grid">
+<div class="card"><span class="label">FIRMWARE</span><span id="fw" class="value">SCANNING</span></div>
+<div class="card"><span class="label">PLATFORM</span><span id="platform" class="value">SCANNING</span></div>
+<div class="card"><span class="label">SERVICE WORKER</span><span id="sw" class="value">CHECKING</span></div>
+<div class="card"><span class="label">HOST RESPONSE</span><span id="lat" class="value">CHECKING</span></div>
+</section>
+
+<section class="panel">
+<div class="panelhead"><strong>TOOLS</strong><span id="status" class="value">READY</span></div>
+<div class="actions">
+<a class="linkbtn primary" href="./">OPEN MAIN HOST</a>
+<button id="scan">RUN PREFLIGHT</button>
+<button id="refreshsw">UPDATE CACHE</button>
+<button id="reset">RESET SESSION</button>
+<button id="copy">COPY REPORT</button>
+</div>
+<div id="term" class="term" role="log" aria-live="polite"></div>
+</section>
+
+<section class="two">
+<section class="panel">
+<div class="panelhead"><strong>ENVIRONMENT</strong><span class="build">LOCAL</span></div>
+<div class="list">
+<div class="row"><span>Browser</span><span id="browser">-</span></div>
+<div class="row"><span>Platform</span><span id="platform2">-</span></div>
+<div class="row"><span>Viewport</span><span id="viewport">-</span></div>
+<div class="row"><span>Touch</span><span id="touch">-</span></div>
+<div class="row"><span>Secure context</span><span id="secure">-</span></div>
+<div class="row"><span>Local storage</span><span id="storage">-</span></div>
+<div class="row"><span>Online state</span><span id="online">-</span></div>
+</div>
+</section>
+
+<section class="panel">
+<div class="panelhead"><strong>FIRMWARE / SUPPORTED VERSIONS</strong><span class="build">PROJECT STATUS</span></div>
+<div class="matrix">
+<div class="fw tested"><strong>13.52</strong><span>HARDWARE TESTED · 9/10 OBSERVED</span></div>
+<div class="fw proven"><strong>13.02</strong><span>PROJECT ROUTE VERIFIED</span></div>
+<div class="fw proven"><strong>13.04</strong><span>PROJECT ROUTE VERIFIED</span></div>
+<div class="fw doc"><strong>9.00</strong><span>GOLDHEN RELEASE SUPPORT</span></div>
+<div class="fw doc"><strong>9.60</strong><span>GOLDHEN RELEASE SUPPORT</span></div>
+<div class="fw doc"><strong>10.00 / 10.01</strong><span>GOLDHEN RELEASE SUPPORT</span></div>
+<div class="fw doc"><strong>10.50</strong><span>GOLDHEN RELEASE SUPPORT</span></div>
+<div class="fw doc"><strong>10.70 / 10.71</strong><span>GOLDHEN RELEASE SUPPORT</span></div>
+<div class="fw doc"><strong>11.00</strong><span>GOLDHEN RELEASE SUPPORT</span></div>
+<div class="fw doc"><strong>11.52</strong><span>GOLDHEN 2.4b18.5+ REQUIRED</span></div>
+</div>
+</section>
+</section>
+
+<footer>H4SENSI // local control layer // no external libraries // offline-friendly</footer>
+</main>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const term=$("term"), lines=[];
+function log(msg,cls){const stamp=new Date().toTimeString().slice(0,8),row=document.createElement("div");row.textContent="["+stamp+"] "+msg;if(cls)row.className=cls;term.appendChild(row);term.scrollTop=term.scrollHeight;lines.push("["+stamp+"] "+msg)}
+function set(id,text,cls){const e=$(id);if(!e)return;e.textContent=text;e.className="value "+(cls||"")}
+function detectFW(){
+  const ua=navigator.userAgent||"", app=navigator.appVersion||"", m=(ua.match(/PlayStation\s*4[\/ ](\d+)\.(\d+)/i)||app.match(/PlayStation\s*4[\/ ](\d+)\.(\d+)/i));
+  return m?m[1]+"."+m[2]:null;
+}
+function browser(){const u=navigator.userAgent||"";if(/PlayStation 4/i.test(u))return "PlayStation browser";if(/Chrome/i.test(u))return "Chrome";if(/Firefox/i.test(u))return "Firefox";if(/Safari/i.test(u))return "Safari";return "Unknown"}
+function storageOK(){try{localStorage.setItem("__h4cc","1");localStorage.removeItem("__h4cc");return true}catch(_){return false}}
+async function ping(){
+  const t=performance.now();
+  try{const r=await fetch("./?h4ping="+Date.now(),{cache:"no-store",credentials:"same-origin"});const ms=Math.round(performance.now()-t);return r.ok?ms:-1}catch(_){return -1}
+}
+function readSW(){
+  if(!("serviceWorker" in navigator))return Promise.resolve("UNAVAILABLE");
+  return navigator.serviceWorker.getRegistration("./").then(r=>r&&r.active?"ACTIVE":r&&r.installing?"INSTALLING":"NOT REGISTERED").catch(()=> "ERROR");
+}
+async function preflight(){
+  $("status").textContent="RUNNING";$("status").className="value warn";term.innerHTML="";lines.length=0;
+  log("preflight started","note");
+  const fw=detectFW();set("fw",fw||"UNKNOWN",fw?"ok":"warn");log("firmware token: "+(fw||"not found"),fw?"good":"note");
+  const isPS4=/PlayStation\s*4/i.test(navigator.userAgent||"")||/PlayStation\s*4/i.test(navigator.platform||"");
+  set("platform",isPS4?"PS4 DETECTED":"OTHER",isPS4?"ok":"warn");$("platform2").textContent=isPS4?"PS4":"OTHER";log("platform: "+(isPS4?"PS4":"other"),isPS4?"good":"note");
+  $("browser").textContent=browser();log("browser: "+browser(),"cyan");
+  $("viewport").textContent=innerWidth+"×"+innerHeight;$("touch").textContent=("ontouchstart" in window||navigator.maxTouchPoints>0)?"YES":"NO";
+  const secure=location.protocol==="https:"||location.hostname==="localhost";$("secure").textContent=secure?"OK":"NO";$("secure").className=secure?"ok":"bad";
+  $("storage").textContent=storageOK()?"READY":"BLOCKED";$("storage").className=storageOK()?"ok":"bad";
+  $("online").textContent=navigator.onLine?"ONLINE":"OFFLINE";$("online").className=navigator.onLine?"ok":"warn";
+  const sw=await readSW();set("sw",sw,sw==="ACTIVE"?"ok":sw==="UNAVAILABLE"?"warn":"warn");log("service worker: "+sw,sw==="ACTIVE"?"good":"note");
+  const ms=await ping();if(ms>=0){set("lat",ms+" ms","ok");log("host response: "+ms+" ms","good")}else{set("lat","FAILED","bad");log("host response: failed","bad")}
+  log("preflight complete","cyan");$("status").textContent="READY";$("status").className="value ok";
+}
+$("scan").onclick=preflight;
+$("refreshsw").onclick=async function(){
+  $("status").textContent="UPDATING";$("status").className="value warn";log("requesting service worker update...","note");
+  try{const r=await navigator.serviceWorker.getRegistration("./");if(!r){log("no registration found","bad");$("status").textContent="CHECK";$("status").className="value warn";return}await r.update();log("service worker update requested","good");$("status").textContent="UPDATED";$("status").className="value ok"}catch(e){log("update failed: "+e.message,"bad");$("status").textContent="FAILED";$("status").className="value bad"}
+};
+$("reset").onclick=function(){
+  try{
+    localStorage.removeItem("h4sensi_verified_v2");
+    localStorage.removeItem("h4sensi_diag_history_v1");
+    log("session verification memory cleared","good");
+    log("diagnostic history cleared","good");
+  }catch(e){log("storage reset failed: "+e.message,"bad")}
+};
+$("copy").onclick=function(){
+  const report=["H4SENSI CONTROL CENTER","Firmware: "+detectFW(), "Browser: "+browser(),"Platform: "+navigator.platform,"Online: "+navigator.onLine,"SW: "+$("sw").textContent,"Latency: "+$("lat").textContent,"",...lines].join("\n");
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(report).then(()=>log("report copied","good")).catch(()=>log("clipboard blocked","bad"));
+  else log("clipboard API unavailable","bad");
+};
+log("control center online","note");preflight();
+})();
+</script>
+</body></html>
