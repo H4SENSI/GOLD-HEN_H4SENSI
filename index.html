@@ -12,8 +12,8 @@ main{width:min(940px,94vw);margin:auto;padding:24px 0}.bar{display:flex;justify-
 h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:-.07em;margin:34px 0 8px}
 .panel{margin-top:22px;border:1px solid var(--line);background:#060c10}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}.cell{padding:14px;background:#071015}.label{display:block;color:var(--dim);font-size:10px;letter-spacing:.13em;margin-bottom:6px}.v{font-size:13px;font-weight:700}.ok{color:var(--green)}.warn{color:var(--amber)}.bad{color:var(--red)}
 .term{min-height:165px;padding:15px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:#8ca198;font-size:12px;line-height:1.55;white-space:pre-wrap;overflow:auto}
-.controls{display:grid;grid-template-columns:1fr auto;gap:10px;padding:15px}.supported{border-top:1px solid var(--line);padding:12px 15px;line-height:1.7}select,.btn{border:1px solid var(--line);background:#0a1218;color:var(--text);padding:13px 12px;font:700 12px "Courier New",monospace}.btn{cursor:pointer}.btn.primary{background:var(--green);color:#001108;border-color:var(--green)}.btn:disabled{opacity:.4;cursor:default}
-@media(max-width:720px){.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}}
+.controls{display:grid;grid-template-columns:1fr auto;gap:10px;padding:15px}.supported{border-top:1px solid var(--line);padding:12px 15px;line-height:1.7}.fwcards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.fwcard{border:1px solid var(--line);padding:11px;background:#081017}.fwcard strong{display:block;font-size:14px;margin-bottom:5px}.fwcard span{font-size:9px;line-height:1.5;color:var(--muted)}.fwcard.verified{border-color:var(--green)}.fwcard.verified span{color:var(--green)}.fwcard.proven{border-color:#4a7b8b}.fwcard.proven span{color:#8fc2d0}.fwcard.documented{border-color:#725c25}.fwcard.documented span{color:var(--amber)}select,.btn{border:1px solid var(--line);background:#0a1218;color:var(--text);padding:13px 12px;font:700 12px "Courier New",monospace}.btn{cursor:pointer}.btn.primary{background:var(--green);color:#001108;border-color:var(--green)}.btn:disabled{opacity:.4;cursor:default}
+@media(max-width:720px){.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.fwcards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -34,12 +34,21 @@ h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:
 <button class="btn primary" id="launch" disabled>INITIALIZE</button>
 </div>
 <div class="supported">
-<span class="label">SECURITY MATRIX / ALL ROUTES</span>
-<span class="v">7.00 · 7.01 · 7.02 · 7.50 · 7.51 · 7.55 · 8.00 · 8.01 · 8.03 · 8.50 · 8.52 · 13.02 · 13.04 · 13.50 · 13.52</span>
-<div style="margin-top:10px;color:var(--muted);font-size:11px;line-height:1.6">
-ALL FIRMWARE ROUTES USE THE SAME STRICT GATE:
-EXACT PS4 UA DETECTION → ROUTE MATCH → ROUTE STATUS → LOCAL ASSET CHECK → FRESH CONTEXT CHECK → INITIALIZE.
-NO MANUAL FIRMWARE SELECTION. NO FALLBACK ROUTES. NO GUESSING.
+<span class="label">H4SENSI / FIRMWARE STATUS</span>
+<div class="fwcards">
+  <div class="fwcard verified"><strong>13.52</strong><span>HARDWARE TESTED · 9/10 observed</span></div>
+  <div class="fwcard proven"><strong>13.02</strong><span>ROUTE PROVEN IN PROJECT DATA</span></div>
+  <div class="fwcard proven"><strong>13.04</strong><span>ROUTE SHARES 13.02 KERNEL DATA</span></div>
+  <div class="fwcard documented"><strong>9.00</strong><span>GOLDHEN UPSTREAM SUPPORTED</span></div>
+  <div class="fwcard documented"><strong>9.60</strong><span>GOLDHEN UPSTREAM SUPPORTED</span></div>
+  <div class="fwcard documented"><strong>10.00 / 10.01</strong><span>GOLDHEN UPSTREAM SUPPORTED</span></div>
+  <div class="fwcard documented"><strong>10.50</strong><span>GOLDHEN UPSTREAM SUPPORTED</span></div>
+  <div class="fwcard documented"><strong>10.70 / 10.71</strong><span>GOLDHEN UPSTREAM SUPPORTED</span></div>
+  <div class="fwcard documented"><strong>11.00</strong><span>GOLDHEN UPSTREAM SUPPORTED</span></div>
+  <div class="fwcard documented"><strong>11.52</strong><span>REQUIRES GOLDHEN 2.4b18.5+ · NOT H4SENSI-HW TESTED</span></div>
+</div>
+<div style="margin-top:12px;color:var(--muted);font-size:11px;line-height:1.6">
+The page distinguishes hardware-tested, project-proven and upstream-documented support. It does not silently label untested firmware as working.
 </div>
 </div>
 </section>
@@ -113,7 +122,7 @@ if("serviceWorker" in navigator){
 }
 
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=9",{scope:"./"})
+  navigator.serviceWorker.register("./sw.js?v=10",{scope:"./"})
     .then(function(reg){
       if(reg.waiting){reg.waiting.postMessage({type:"SKIP_WAITING"});}
     })
@@ -198,7 +207,7 @@ function detectFirmware(){
   };
 }
 var VERIFY_KEY="h4sensi_verified_v2";
-var HOST_BUILD="2026.09.28.9";
+var HOST_BUILD="2026.09.29.1";
 var scanToken=0;
 var scanning=false;
 var readySnapshot=null;
