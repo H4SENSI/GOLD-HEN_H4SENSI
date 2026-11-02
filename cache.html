@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>H4SENSI // OFFLINE CACHE</title>
+<title>H4SENSI | Preparar caché</title>
 <style>
 :root{color-scheme:dark;--bg:#030608;--line:#17303b;--text:#e8fff1;--muted:#71828c;--green:#5cff9a;--amber:#ffd166;--red:#ff6675}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:"Courier New",monospace}
@@ -12,10 +12,10 @@ main{width:min(760px,92vw);margin:8vh auto}.box{border:1px solid var(--line);pad
 </head>
 <body>
 <main><section class="box">
-<div class="tag">H4SENSI // LOCAL CACHE INSTALLER</div>
-<div class="title">OFFLINE CACHE</div>
+<div class="tag">H4SENSI // PREPARAR CACHÉ</div>
+<div class="title">PREPARAR CACHÉ</div>
 <div class="bar"><div class="fill" id="fill"></div></div>
-<div class="status" id="status">Registering service worker...</div>
+<div class="status" id="status">Registrando el Service Worker...</div>
 </section></main>
 <script>
 (function(){
@@ -24,12 +24,12 @@ var fill=document.getElementById("fill"),status=document.getElementById("status"
 function send(controller){
   if(sent||!controller)return;
   sent=true;
-  status.textContent="Caching available host assets...";
+  status.textContent="Guardando los archivos del host...";
   controller.postMessage({type:"CACHE_URLS",urls:["./700/alert.js","./700/config.js","./700/kpatch/700.elf","./700/kpatch/750.elf","./700/kpatch/800.elf","./700/kpatch/850.elf","./700/lapse.js","./700/lapse/700.js","./700/lapse/750.js","./700/lapse/751.js","./700/lapse/800.js","./700/lapse/850.js","./700/lapse/852.js","./700/module/chain.js","./700/module/int64.js","./700/module/mem.js","./700/module/memtools.js","./700/module/offset.js","./700/module/rw.js","./700/module/utils.js","./700/module/view.js","./700/psfree.js","./700/rop/700.js","./700/rop/750.js","./700/rop/800.js","./700/rop/850.js","./700/send.js","./900/alert.js","./900/config.js","./900/lapse.js","./900/lapse/900.js","./900/lapse/903.js","./900/lapse/950.js","./900/module/chain.js","./900/module/constants.js","./900/module/int64.js","./900/module/mem.js","./900/module/memtools.js","./900/module/offset.js","./900/module/rw.js","./900/module/utils.js","./900/module/view.js","./900/psfree.js","./900/rop/900.js","./900/rop/950.js","./900/send.js","./README.md","./cache.html","./cache.manifest","./core.js","./css/lapse.js","./css/loader.js","./css/main.js","./css/misc.js","./css/ps4/constants.js","./css/ps4/kernel.js","./css/ps4/patches/1000.bin","./css/ps4/userland.js","./css/worker.js","./css/workers.js","./goldhen.bin","./goldhen_2.4b18.12.bin","./index.html","./int64.js","./jb.html","./jb.js","./mem.js","./patches/1302.bin","./patches/1350.bin","./patches/1352.bin","./ps4_offsets.js","./rpc_worker.js","./sw.js"]});
 }
 if(!("serviceWorker" in navigator)){
   status.className="bad";
-  status.textContent="Service Worker is not available in this browser.";
+  status.textContent="Este navegador no admite Service Workers.";
   return;
 }
 navigator.serviceWorker.addEventListener("message",function(e){
@@ -37,15 +37,15 @@ navigator.serviceWorker.addEventListener("message",function(e){
   if(d.type==="PRECACHE_PROGRESS"){
     var pct=d.total?Math.round(d.done/d.total*100):0;
     fill.style.width=pct+"%";
-    status.textContent="Cached "+d.ok+"/"+d.total+" files // "+pct+"%";
+    status.textContent="Guardados "+d.ok+"/"+d.total+" archivos // "+pct+"%";
   }else if(d.type==="PRECACHE_DONE"){
     fill.style.width="100%";
     if(d.failed){
       status.className="warn";
-      status.textContent="Cache installed with "+d.failed+" missing asset(s). Online fallback remains available.";
+      status.textContent="Caché guardada con "+d.failed+" archivo(s) pendiente(s). El host seguirá disponible con conexión.";
     }else{
       status.className="ok";
-      status.textContent="Cache verified. Launching host...";
+      status.textContent="Caché lista. Abriendo el host...";
       setTimeout(function(){location.href="./index.html";},500);
     }
   }
@@ -59,7 +59,7 @@ navigator.serviceWorker.register("./sw.js?v=11",{scope:"./"}).then(function(reg)
   });
 }).catch(function(){
   status.className="bad";
-  status.textContent="Service Worker registration failed.";
+  status.textContent="No se pudo registrar el Service Worker.";
 });
 })();
 </script>
