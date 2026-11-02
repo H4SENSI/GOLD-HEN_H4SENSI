@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>H4SENSI // GOLDHEN MULTI</title>
+<title>H4SENSI | GoldHEN Multi</title>
 <style>
 :root{color-scheme:dark;--bg:#030608;--panel:#081017;--line:#17303b;--text:#e8fff1;--muted:#71828c;--dim:#3b4b54;--green:#5cff9a;--amber:#ffd166;--red:#ff6675}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:"Courier New",monospace}
@@ -19,19 +19,19 @@ h1{font-size:clamp(34px,8vw,70px);line-height:.9;font-weight:400;letter-spacing:
 <body>
 <main>
 <header class="bar"><span class="brand">H4SENSI</span></header>
-<h1>GOLDHEN_MULTI</h1>
+<h1>GOLDHEN MULTI</h1>
 <section class="panel">
 <div class="grid">
-<div class="cell"><span class="label">FIRMWARE</span><span class="v" id="fw">SCANNING</span></div>
-<div class="cell"><span class="label">ENGINE</span><span class="v" id="engine">SCANNING</span></div>
-<div class="cell"><span class="label">PRECHECK</span><span class="v" id="pre">WAITING</span></div><div class="cell"><span class="label">ROUTE STATUS</span><span class="v" id="hw">CHECKING</span></div><div class="cell"><span class="label">EXECUTION</span><span class="v" id="exec">IDLE</span></div>
+<div class="cell"><span class="label">FIRMWARE</span><span class="v" id="fw">DETECTANDO</span></div>
+<div class="cell"><span class="label">MOTOR</span><span class="v" id="engine">DETECTANDO</span></div>
+<div class="cell"><span class="label">COMPROBACIÓN</span><span class="v" id="pre">EN ESPERA</span></div><div class="cell"><span class="label">ESTADO DE RUTA</span><span class="v" id="hw">COMPROBANDO</span></div><div class="cell"><span class="label">EJECUCIÓN</span><span class="v" id="exec">INACTIVO</span></div>
 </div>
 <div class="term" id="term" role="log" aria-live="polite">$ H4SENSI
-[BOOT] terminal online
-[BOOT] reading PlayStation browser user-agent...</div>
+[INICIO] Launcher iniciado
+[INICIO] Consultando los datos del navegador...</div>
 <div class="controls">
 <button class="btn" id="scan">RESCAN</button>
-<button class="btn primary" id="launch" disabled>INITIALIZE</button>
+<button class="btn primary" id="launch" disabled>INICIAR</button>
 </div>
 </section>
 </main>
@@ -57,24 +57,24 @@ function consumeEngineLog(message){
   if(m){
     lastEngineVerdict={jailbroken:m[1]==="1",kpatched:m[2]==="1",payloadRunning:m[3]==="1"};
     var v=lastEngineVerdict;
-    if(v.jailbroken&&v.kpatched&&v.payloadRunning)setExecution("RUNTIME VERIFIED","ok");
-    else setExecution("RUNTIME FAILED","bad");
+    if(v.jailbroken&&v.kpatched&&v.payloadRunning)setExecution("EJECUCIÓN CONFIRMADA","ok");
+    else setExecution("ERROR DE EJECUCIÓN","bad");
     return;
   }
   m=s.match(/PROOF-SUMMARY-FINAL\s+pass=(\d+)\s+fail=(\d+)/i);
   if(m){
     lastProofSummary={pass:Number(m[1]),fail:Number(m[2])};
     if(lastProofSummary.fail===0&&lastEngineVerdict&&lastEngineVerdict.jailbroken&&lastEngineVerdict.kpatched&&lastEngineVerdict.payloadRunning){
-      setExecution("SUCCESS","ok");
-      terminalWrite("runtime proof complete: jailbreak + kpatch + payload confirmed","VERIFY");
+      setExecution("CORRECTO","ok");
+      terminalWrite("La ejecución terminó correctamente: jailbreak, kpatch y payload confirmados","VERIFY");
     }else{
-      setExecution("FAILED "+lastProofSummary.pass+"/"+(lastProofSummary.pass+lastProofSummary.fail),"bad");
-      terminalWrite("runtime proof failed: no valid jailbreak completion state","VERIFY");
+      setExecution("FALLÓ "+lastProofSummary.pass+"/"+(lastProofSummary.pass+lastProofSummary.fail),"bad");
+      terminalWrite("La ejecución no llegó a un estado válido de finalización","VERIFY");
     }
   }else if(/PROOF-FAIL|\bTHREW\b|ENGINE LOAD FAILED/i.test(s)){
-    setExecution("FAILED","bad");
+    setExecution("FALLÓ","bad");
   }else if(/PAYLOAD-RUN\s+pthread_create=0\s+handle=/i.test(s)){
-    setExecution("PAYLOAD STARTED","warn");
+    setExecution("PAYLOAD INICIADO","warn");
   }
 }
 
@@ -96,9 +96,9 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.addEventListener("message",function(event){
     var d=event.data||{};
     if(d.type==="PRECACHE_PROGRESS"){
-      terminalWrite("cache "+d.done+"/"+d.total+" ok="+d.ok,"CACHE");
+      terminalWrite("Caché: "+d.done+"/"+d.total+" archivos guardados","CACHÉ");
     }else if(d.type==="PRECACHE_DONE"){
-      terminalWrite("cache complete ok="+d.ok+" failed="+d.failed,"CACHE");
+      terminalWrite("Caché finalizada. Correctos: "+d.ok+"; con error: "+d.failed,"CACHÉ");
     }
   });
 }
@@ -151,32 +151,32 @@ function detectFirmware(){
   var versions={},signals=[],i;
 
   if(uaVersions.length){
-    signals.push("USER_AGENT="+uaVersions.join(","));
+    signals.push("NAVEGADOR="+uaVersions.join(","));
     for(i=0;i<uaVersions.length;i++)versions[uaVersions[i]]=1;
   }
   if(appVersions.length){
-    signals.push("APP_VERSION="+appVersions.join(","));
+    signals.push("VERSIÓN_APP="+appVersions.join(","));
     for(i=0;i<appVersions.length;i++)versions[appVersions[i]]=1;
   }
 
   var isPS4=/PlayStation\s*4/i.test(platform)||/PlayStation\s*4/i.test(ua);
-  if(platform)signals.push("PLATFORM="+platform);
+  if(platform)signals.push("PLATAFORMA="+platform);
 
   if(uaVersions.length>1||appVersions.length>1){
-    return {fw:null,confidence:"CONFLICT",signals:signals,reason:"multiple firmware versions found in browser metadata"};
+    return {fw:null,confidence:"CONFLICT",signals:signals,reason:"se encontraron varias versiones en los datos del navegador"};
   }
 
   if(!isPS4){
-    return {fw:null,confidence:"NONE",signals:signals,reason:"PS4 platform not detected"};
+    return {fw:null,confidence:"NONE",signals:signals,reason:"no se detectó el navegador de PS4"};
   }
 
   var keys=Object.keys(versions);
   if(keys.length>1){
-    return {fw:null,confidence:"CONFLICT",signals:signals,reason:"firmware signals disagree"};
+    return {fw:null,confidence:"CONFLICT",signals:signals,reason:"los datos del navegador indican versiones distintas"};
   }
 
   if(!keys.length){
-    return {fw:null,confidence:"LOW",signals:signals,reason:"PS4 detected but firmware string missing"};
+    return {fw:null,confidence:"LOW",signals:signals,reason:"se detectó la PS4, pero no la versión del firmware"};
   }
 
   var v=keys[0];
@@ -185,7 +185,7 @@ function detectFirmware(){
     fw:v,
     confidence:exactUa?"EXACT":"MEDIUM",
     signals:signals,
-    reason:exactUa?"exact firmware token found in PS4 user-agent":"firmware found in PS4 browser metadata"
+    reason:exactUa?"versión exacta encontrada en el navegador de PS4":"versión encontrada en los datos del navegador"
   };
 }
 var VERIFY_KEY="h4sensi_verified_v2";
@@ -307,7 +307,7 @@ function scan(){
     readySnapshot=null;
     scanning=false;
     window.h4=null;
-    terminalWrite("no exact route exists for detected firmware; refusing to guess","SAFETY");
+    terminalWrite("No hay una ruta configurada para este firmware. Se canceló el inicio.","AVISO");
     return;
   }
 
@@ -320,7 +320,7 @@ function scan(){
     launch.disabled=true;
     readySnapshot=null;
     window.h4=null;
-    terminalWrite("exact PS4 firmware token not confirmed in User-Agent; refusing to start","SAFETY");
+    terminalWrite("No se pudo confirmar la versión exacta del firmware. El inicio quedó bloqueado.","AVISO");
     return;
   }
 
@@ -330,7 +330,7 @@ function scan(){
     engEl.className="v bad";
     pre.textContent="BLOCKED";
     pre.className="v bad";
-    terminalWrite("firmware detection conflict; refusing to guess","DETECT");
+    terminalWrite("Los datos del firmware no coinciden. Revisá la detección antes de continuar.","DETECCIÓN");
     launch.disabled=true;
     window.h4=null;
     return;
@@ -346,8 +346,8 @@ function scan(){
     readySnapshot=null;
     scanning=false;
     window.h4=null;
-    terminalWrite("route blocked: firmware route is not complete in this host","SAFETY");
-    terminalWrite("required status: ROUTE_READY","SAFETY");
+    terminalWrite("La ruta para este firmware no está habilitada en el host.","AVISO");
+    terminalWrite("La ruta debe estar habilitada antes de continuar.","AVISO");
     return;
   }
 
@@ -357,8 +357,8 @@ function scan(){
     engEl.className="v bad";
     pre.textContent="BLOCKED";
     pre.className="v bad";
-    terminalWrite("firmware: "+(fw||"unknown"),"SCAN");
-    terminalWrite("no verified firmware route","SCAN");
+    terminalWrite("Firmware: "+(fw||"desconocido"),"REVISIÓN");
+    terminalWrite("No hay una ruta disponible para esta versión.","REVISIÓN");
     launch.disabled=true;
     readySnapshot=null;
     scanning=false;
@@ -376,12 +376,12 @@ function scan(){
   }
   pre.textContent="CHECKING";
   pre.className="v warn";
-  terminalWrite("firmware: "+fw,"SCAN");
-  terminalWrite("engine: "+row[0],"SCAN");
-  terminalWrite("checking local assets...","SCAN");
+  terminalWrite("Firmware: "+fw,"REVISIÓN");
+  terminalWrite("Motor: "+row[0],"REVISIÓN");
+  terminalWrite("Comprobando los archivos necesarios...","REVISIÓN");
 
   var req=row[2],bad=[],i;
-  terminalWrite("asset verification: "+req.length+" files","VERIFY");
+  terminalWrite("Archivos a comprobar: "+req.length,"COMPROBACIÓN");
 
   function failScan(){
     if(token!==scanToken)return;
@@ -395,7 +395,7 @@ function scan(){
   }
 
   Promise.all(req.map(function(path,idx){
-    terminalWrite("checking "+(idx+1)+"/"+req.length+" "+path,"ASSET");
+    terminalWrite("Archivo "+(idx+1)+"/"+req.length+": "+path,"ARCHIVO");
     return head(path,token).then(function(ok){
       if(!ok)bad.push(path);
       return ok;
@@ -415,19 +415,19 @@ function scan(){
 
   pre.textContent="READY";
   pre.className="v ok";
-  terminalWrite("all required local assets found","VERIFY");
+  terminalWrite("Se encontraron todos los archivos necesarios.","COMPROBACIÓN");
   saveVerified(fw,row[0],row[1],req.length);
   readySnapshot={firmware:fw,engine:row[0],route:row[1],ua:navigator.userAgent||"",build:HOST_BUILD};
   scanning=false;
-  terminalWrite("firmware + engine + assets verified","VERIFY");
+  terminalWrite("Firmware, motor y archivos comprobados.","COMPROBACIÓN");
   terminalWrite("verification saved for this firmware context","MEMORY");
-  terminalWrite("route ready","SCAN");
+  terminalWrite("La ruta está lista.","REVISIÓN");
   scanning=false;
   launch.disabled=false;
     window.h4={fw:fw,row:row};
   }).catch(function(){
     if(token!==scanToken)return;
-    terminalWrite("asset verification runtime error","VERIFY");
+    terminalWrite("Se produjo un error al comprobar los archivos.","COMPROBACIÓN");
     failScan();
   });
 }
@@ -456,12 +456,12 @@ launch.onclick=function(){
   lastEngineVerdict=null;
   lastProofSummary=null;
   setExecution("RUNNING","warn");
-  terminalWrite("initializing "+h.row[1],"LAUNCH");
+  terminalWrite("Iniciando "+h.row[1]+"...","INICIO");
   var s=document.createElement("script");
   s.type=h.row[3]?"module":"text/javascript";
   s.src=h.row[1];
   s.onerror=function(){
-    terminalWrite("engine load failed","LAUNCH");
+    terminalWrite("No se pudo cargar el motor.","INICIO");
     pre.textContent="ENGINE ERROR";
     pre.className="v bad";
     setExecution("ENGINE ERROR","bad");
@@ -481,9 +481,10 @@ window.addEventListener("h4sensi-log",function(event){
   terminalWrite(message,detail.source||"ENGINE");
 });
 
-terminalWrite("terminal online","BOOT");
+terminalWrite("Launcher iniciado","INICIO");
 
 document.getElementById("scan").onclick=scan;
+document.getElementById("scan").textContent="VOLVER A COMPROBAR";
 
 window.addEventListener("pageshow",function(event){
   if(event.persisted&&!scanning){

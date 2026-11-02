@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Basic static checks for local links and PWA version consistency."""
+"""Comprueba enlaces internos y versiones de la caché del sitio."""
 from pathlib import Path
 import re
 import sys
@@ -14,17 +14,17 @@ for target in re.findall(r'href=["\']\./([^"\']+)["\']', index):
     if target.startswith(("http:", "https:", "#")):
         continue
     if not (ROOT / target).is_file():
-        errors.append(f"index.html links to missing file: {target}")
+        errors.append(f"index.html apunta a un archivo inexistente: {target}")
 
 versions = re.findall(r'register\(["\']\./sw\.js\?v=(\d+)["\']', index + cache)
 if len(versions) < 2 or len(set(versions)) != 1:
-    errors.append("index.html and cache.html must register the same versioned service worker")
+    errors.append("index.html y cache.html deben registrar la misma versión del Service Worker")
 
 if "h4sensi-offline-v9" not in worker:
-    errors.append("service worker cache version was not bumped")
+    errors.append("no se actualizó la versión de la caché del Service Worker")
 
 if errors:
     print("\n".join("ERROR: " + item for item in errors))
     sys.exit(1)
 
-print("OK: local links exist and PWA versions are consistent.")
+print("Correcto: los enlaces locales existen y las versiones de caché coinciden.")
