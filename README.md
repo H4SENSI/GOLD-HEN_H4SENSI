@@ -18,6 +18,10 @@ En una PS4 con firmware **13.52** se registraron **9 ejecuciones correctas de 10
 
 Si la comprobación no termina correctamente, el launcher deja el inicio deshabilitado.
 
+## Firmware 14.00
+
+GoldHEN no tiene soporte oficial para firmware 14.00 en la versión publicada actualmente (v2.4b18). El método BD-JB para esta versión sigue siendo experimental e inestable. Si el launcher detecta 14.00, muestra un aviso y bloquea el inicio; no intenta cargar un binario de GoldHEN incompatible.
+
 ## Caché sin conexión
 
 Para guardar los archivos disponibles en la consola, abrí `cache.html` con conexión y esperá a que finalice el proceso. La caché se administra mediante el Service Worker.
