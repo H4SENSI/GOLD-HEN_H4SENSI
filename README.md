@@ -20,7 +20,13 @@ Si la comprobación no termina correctamente, el launcher deja el inicio deshabi
 
 ## Firmware 14.00
 
-GoldHEN no tiene soporte oficial para firmware 14.00 en la versión publicada actualmente (v2.4b18). El método BD-JB para esta versión sigue siendo experimental e inestable. Si el launcher detecta 14.00, muestra un aviso y bloquea el inicio; no intenta cargar un binario de GoldHEN incompatible.
+SiSTRo publicó GoldHEN **v2.4b18.13 beta** con soporte para firmware 14.00. El autor advierte que pueden aparecer errores por tratarse de una versión beta.
+
+Publicación: https://ko-fi.com/s/e694c36022
+
+El host todavía no tiene una ruta BD-J integrada ni pruebas propias en 14.00. Al detectar esa versión, muestra el aviso y bloquea el inicio desde el launcher.
+
+El ISO de Poy Gaming recibido para revisión es una modificación de terceros. Su propio `NOTICE.TXT` indica que no es una publicación oficial de SiSTRo y que no se midió su tasa de éxito en hardware. No se incorpora al repositorio ni se presenta como el binario oficial de GoldHEN.
 
 ## Caché sin conexión
 
