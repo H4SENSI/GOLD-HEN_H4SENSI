@@ -20,7 +20,7 @@ versions = re.findall(r'register\(["\']\./sw\.js\?v=(\d+)["\']', index + cache)
 if len(versions) < 2 or len(set(versions)) != 1:
     errors.append("index.html y cache.html deben registrar la misma versión del Service Worker")
 
-if "h4sensi-offline-v9" not in worker:
+if "h4sensi-offline-v10" not in worker:
     errors.append("no se actualizó la versión de la caché del Service Worker")
 
 if 'if(fw==="14.00")' not in index or "GoldHEN todavía no es compatible" not in index:
