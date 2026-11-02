@@ -53,7 +53,7 @@ navigator.serviceWorker.addEventListener("message",function(e){
 navigator.serviceWorker.addEventListener("controllerchange",function(){
   send(navigator.serviceWorker.controller);
 });
-navigator.serviceWorker.register("./sw.js?v=12",{scope:"./"}).then(function(reg){
+navigator.serviceWorker.register("./sw.js?v=13",{scope:"./"}).then(function(reg){
   return navigator.serviceWorker.ready.then(function(){
     send(navigator.serviceWorker.controller||reg.active);
   });
