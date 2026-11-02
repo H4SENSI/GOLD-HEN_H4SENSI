@@ -1,4 +1,4 @@
-name: Validate host
+name: Revisar host
 
 on:
   push:
@@ -9,12 +9,12 @@ permissions:
   contents: read
 
 jobs:
-  static-checks:
+  comprobaciones:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-      - name: Check local links and PWA versions
+      - name: Revisar enlaces y versiones de caché
         run: python scripts/check_pwa.py
