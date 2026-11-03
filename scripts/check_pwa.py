@@ -20,11 +20,14 @@ versions = re.findall(r'register\(["\']\./sw\.js\?v=(\d+)["\']', index + cache)
 if len(versions) < 2 or len(set(versions)) != 1:
     errors.append("index.html y cache.html deben registrar la misma versión del Service Worker")
 
-if "h4sensi-offline-v11" not in worker:
+if "h4sensi-offline-v12" not in worker:
     errors.append("no se actualizó la versión de la caché del Service Worker")
 
-if 'if(fw==="14.00")' not in index or "GoldHEN v2.4b18.13 añade soporte" not in index:
-    errors.append("el launcher debe avisar sobre la beta y bloquear la ruta 14.00")
+if 'if(fw==="14.00")' not in index or "H4SENSI no incorpora esta cadena" not in index:
+    errors.append("el launcher debe advertir que los hosts 14.00 son externos y mantener bloqueado el inicio local")
+for host_url in ("feedchats.fr/web14/jb.html", "ps4.sentrix.ac/raw13/jb.html"):
+    if host_url not in index:
+        errors.append(f"falta el enlace externo esperado: {host_url}")
 if "https://ko-fi.com/s/e694c36022" not in index:
     errors.append("falta el enlace a la publicación de SiSTRo para GoldHEN v2.4b18.13")
 
