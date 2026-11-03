@@ -125,7 +125,7 @@ var ACSS=["css/main.js",["css/main.js","css/lapse.js","css/loader.js","css/misc.
 
 function slop(v){
   var p=v==="13.04"?"patches/1302.bin":"patches/"+v.replace(".","")+".bin";
-  return ["jb.js",["jb.js","core.js","mem.js","int64.js","rpc_worker.js","ps4_offsets.js","goldhen_2.4b18.12.bin",p],1];
+  return ["jb.js",["jb.js","core.js","mem.js","int64.js","rpc_worker.js","ps4_offsets.js","goldhen.bin",p],1];
 }
 function route(v){
   if(F700[v])return ["700"].concat(A700);
@@ -332,7 +332,7 @@ function scan(){
     return;
   }
 
-  if(d.confidence!=="EXACT"){
+  if(d.confidence!=="EXACT" && d.confidence!=="CONFLICT"){
     scanning=false;
     engEl.textContent=row?row[0]:"UNAVAILABLE";
     engEl.className="v warn";
