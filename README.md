@@ -24,9 +24,18 @@ SiSTRo publicó GoldHEN **v2.4b18.13 beta** con soporte para firmware 14.00. El 
 
 Publicación: https://ko-fi.com/s/e694c36022
 
-El host todavía no tiene una ruta BD-J integrada ni pruebas propias en 14.00. Al detectar esa versión, muestra el aviso y bloquea el inicio desde el launcher.
+El host no tiene una ruta propia para 14.00. Al detectar esa versión, bloquea el inicio interno y muestra enlaces a dos servicios externos que se compartieron para pruebas:
 
-El ISO de Poy Gaming recibido para revisión es una modificación de terceros. Su propio `NOTICE.TXT` indica que no es una publicación oficial de SiSTRo y que no se midió su tasa de éxito en hardware. No se incorpora al repositorio ni se presenta como el binario oficial de GoldHEN.
+- FeedChats Web14: https://feedchats.fr/web14/jb.html
+- Sentrix Raw13: https://ps4.sentrix.ac/raw13/jb.html
+
+Estos enlaces no forman parte del código de H4SENSI. El contenido puede cambiar en cualquier momento y no se ha verificado directamente el código que entregan actualmente esos dominios. En el repositorio público relacionado con Raw13, la ruta 14.00 aparece identificada como desarrollo experimental (`14.00-hx1400-dev`), no como una ruta probada de H4SENSI.
+
+GoldHEN v2.4b18.13 se publica como beta y añade soporte para 14.00. La versión del payload y el exploit son componentes separados: disponer de GoldHEN compatible no garantiza que cualquier host o cadena de exploit funcione.
+
+El ISO de Poy Gaming recibido para revisión es una modificación de terceros. Su propio `NOTICE.TXT` indica que no es una publicación oficial de SiSTRo. No se incorpora al repositorio ni se presenta como el binario oficial de GoldHEN.
+
+Usá estos hosts externos bajo tu responsabilidad. Guardá tu trabajo antes de probar y tené presente que un fallo en una cadena de kernel puede bloquear la consola.
 
 ## Caché sin conexión
 
