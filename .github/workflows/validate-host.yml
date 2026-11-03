@@ -18,3 +18,5 @@ jobs:
           python-version: "3.x"
       - name: Revisar enlaces y versiones de caché
         run: python scripts/check_pwa.py
+      - name: Revisar archivos de las rutas activas y la caché sin conexión
+        run: python scripts/check_host_assets.py
