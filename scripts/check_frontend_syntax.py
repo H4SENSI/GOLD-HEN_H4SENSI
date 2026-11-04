@@ -14,10 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 def inline_scripts(path: str) -> list[str]:
     html = (ROOT / path).read_text(encoding="utf-8")
     scripts = []
-    pattern = re.compile(r"<script\\b([^>]*)>(.*?)</script\\s*>", re.I | re.S)
+    pattern = re.compile(r"<script\b([^>]*)>(.*?)</script\s*>", re.I | re.S)
     for match in pattern.finditer(html):
         attributes, source = match.groups()
-        if re.search(r"\\btype\\s*=\\s*['\"]module['\"]", attributes, re.I):
+        if re.search(r"\btype\s*=\s*['\"]module['\"]", attributes, re.I):
             continue
         if source.strip():
             scripts.append(source)
@@ -55,7 +55,7 @@ def main() -> int:
             temp_path.unlink(missing_ok=True)
 
     if errors:
-        print("\\n".join("ERROR: " + item for item in errors))
+        print("\n".join("ERROR: " + item for item in errors))
         return 1
 
     print(f"OK: JavaScript syntax checked in {len(sources)} launcher/worker scripts.")
