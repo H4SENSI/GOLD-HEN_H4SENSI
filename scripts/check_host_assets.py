@@ -23,18 +23,18 @@ def quoted_paths(source: str) -> list[str]:
 
 def object_values(source: str, variable: str) -> set[str]:
     match = re.search(
-        rf"var {re.escape(variable)}\\s*=\\s*\\{{(.*?)\\}};",
+        rf"var {re.escape(variable)}\s*=\s*\{{(.*?)\}};",
         source,
         re.S,
     )
     if not match:
         raise SystemExit(f"ERROR: could not parse {variable} in index.html")
-    return set(re.findall(r'"([^"]+)"\\s*:\\s*1', match.group(1)))
+    return set(re.findall(r'"([^"]+)"\s*:\s*1', match.group(1)))
 
 
 def array_values(source: str, variable: str) -> list[str]:
     match = re.search(
-        rf"var {re.escape(variable)}\\s*=\\s*\\[.*?,\\[(.*?)\\],\\s*[01]\\];",
+        rf"var {re.escape(variable)}\s*=\s*\[.*?,\[(.*?)\],\s*[01]\];",
         source,
         re.S,
     )
@@ -60,7 +60,7 @@ def require_files(paths: list[str], label: str) -> None:
 
 
 def git_blob_sha1(data: bytes) -> str:
-    header = f"blob {len(data)}\\0".encode("ascii")
+    header = f"blob {len(data)}\0".encode("ascii")
     return sha1(header + data).hexdigest()
 
 
@@ -85,13 +85,13 @@ def main() -> int:
     }
 
     slop_match = re.search(
-        r'return \\["jb\\.js",\\[(.*?)\\],1\\];',
+        r'return \["jb\.js",\[(.*?)\],1\];',
         index,
         re.S,
     )
     if not slop_match:
         slop_match = re.search(
-            r'return \\["jb\\.js",\\[(.*?)\\],1\\];',
+            r'return \["jb\.js",\[(.*?)\],1\];',
             index,
             re.S,
         )
@@ -137,7 +137,7 @@ def main() -> int:
 
     actual_manifest_sha = git_blob_sha1(manifest_bytes)
     pinned_sha = re.search(r'ASSET_MANIFEST_SHA1="([a-f0-9]{40})"', index)
-    pinned_size = re.search(r"ASSET_MANIFEST_SIZE=(\\d+)", index)
+    pinned_size = re.search(r"ASSET_MANIFEST_SIZE=(\d+)", index)
     if not pinned_sha or pinned_sha.group(1) != actual_manifest_sha:
         raise SystemExit("ERROR: index.html does not pin the current asset-manifest Git blob SHA-1")
     if not pinned_size or int(pinned_size.group(1)) != len(manifest_bytes):
@@ -162,7 +162,7 @@ def main() -> int:
             + ", ".join(missing_manifest_entries)
         )
 
-    cache_match = re.search(r"urls\\s*:\\[(.*?)\\]\\s*\\}\\s*\\);", cache_html, re.S)
+    cache_match = re.search(r"urls\s*:\[(.*?)\]\s*\}\s*\);", cache_html, re.S)
     if not cache_match:
         raise SystemExit("ERROR: could not parse offline precache URL list in cache.html")
     cache_assets = [path.removeprefix("./") for path in quoted_paths(cache_match.group(1))]
@@ -173,7 +173,7 @@ def main() -> int:
     if "cache.manifest" in cache_assets:
         raise SystemExit("ERROR: obsolete AppCache manifest must not be precached")
 
-    shell_match = re.search(r"const SHELL\\s*=\\s*\\[(.*?)\\];", service_worker, re.S)
+    shell_match = re.search(r"const SHELL\s*=\s*\[(.*?)\];", service_worker, re.S)
     if not shell_match:
         raise SystemExit("ERROR: could not parse service-worker shell list")
     shell_assets = [path.removeprefix("./") for path in quoted_paths(shell_match.group(1))]
@@ -182,16 +182,16 @@ def main() -> int:
     require_files(cache_assets, "offline precache")
     require_files(shell_assets, "service-worker shell")
 
-    local_refs = re.findall(r'(?:href|src)=[\\"\'](\\./[^\\"\']+)[\\"\']', index + cache_html + jailbreak_page)
+    local_refs = re.findall(r'(?:href|src)=[\"\'](\./[^\"\']+)[\"\']', index + cache_html + jailbreak_page)
     require_files(local_refs, "local HTML links and scripts")
 
-    registrations = re.findall(r'register\\([\\"\']\\./sw\\.js\\?v=(\\d+)', index + cache_html)
+    registrations = re.findall(r'register\([\"\']\./sw\.js\?v=(\d+)', index + cache_html)
     worker_version = re.search(r'const CACHE_VERSION = "([0-9]+)"', service_worker)
     if len(registrations) != 2 or len(set(registrations)) != 1:
         raise SystemExit("ERROR: index.html and cache.html must use the same Service Worker URL version")
     if not worker_version or registrations[0] != worker_version.group(1):
         raise SystemExit("ERROR: Service Worker URL and cache namespace versions are out of sync")
-    if re.search(r'<html[^>]+\\bmanifest=', jailbreak_page, re.I):
+    if re.search(r'<html[^>]+\bmanifest=', jailbreak_page, re.I):
         raise SystemExit("ERROR: deprecated Application Cache attribute remains in jb.html")
 
     print(f"OK: {len(enabled)} enabled firmware routes reference existing files.")
