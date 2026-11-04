@@ -106,7 +106,7 @@ if("serviceWorker" in navigator){
 }
 
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=14",{scope:"./"})
+  navigator.serviceWorker.register("./sw.js?v=15",{scope:"./"})
     .then(function(reg){
       if(reg.waiting){reg.waiting.postMessage({type:"SKIP_WAITING"});}
     })
@@ -191,7 +191,10 @@ function detectFirmware(){
   };
 }
 var VERIFY_KEY="h4sensi_verified_v2";
-var HOST_BUILD="2026.11.03.1";
+var HOST_BUILD="2026.11.04.1";
+var ASSET_MANIFEST_SHA1="dbfe89a8869492e2e0e4ccbaaa37efaee4c67700";
+var ASSET_MANIFEST_SIZE=3737;
+var assetManifest=null;
 var scanToken=0;
 var scanning=false;
 var readySnapshot=null;
@@ -233,26 +236,77 @@ function checkPreviousVerification(fw,engine,routePath){
   terminalWrite("previous verification matches current context","MEMORY");
   return {state:"MATCH",old:old};
 }
+function gitBlobSha1(buffer){
+  if(!window.crypto||!crypto.subtle||typeof Uint8Array==="undefined")return Promise.resolve(null);
+  var header="blob "+buffer.byteLength+"\\0";
+  var bytes=new Uint8Array(header.length+buffer.byteLength);
+  for(var i=0;i<header.length;i++)bytes[i]=header.charCodeAt(i);
+  bytes.set(new Uint8Array(buffer),header.length);
+  return crypto.subtle.digest("SHA-1",bytes).then(function(hash){
+    return Array.prototype.map.call(new Uint8Array(hash),function(b){return b.toString(16).padStart(2,"0");}).join("");
+  }).catch(function(){return null;});
+}
+
+function decodeUtf8(buffer){
+  if(typeof TextDecoder!=="undefined")return new TextDecoder("utf-8").decode(buffer);
+  var bytes=new Uint8Array(buffer),out="",chunk=8192;
+  for(var i=0;i<bytes.length;i+=chunk){
+    out+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+chunk,bytes.length)));
+  }
+  return decodeURIComponent(escape(out));
+}
+
+function loadAssetManifest(token){
+  if(!window.fetch)return Promise.resolve(null);
+  return fetch("./asset-manifest.json",{method:"GET",cache:"reload",credentials:"same-origin"})
+    .then(function(response){
+      if(!response.ok)return null;
+      return response.arrayBuffer();
+    })
+    .then(function(buffer){
+      if(!buffer||token!==scanToken||buffer.byteLength!==ASSET_MANIFEST_SIZE)return null;
+      return gitBlobSha1(buffer).then(function(hash){
+        if(hash&&hash!==ASSET_MANIFEST_SHA1)return null;
+        var parsed;
+        try{parsed=JSON.parse(decodeUtf8(buffer));}catch(_){return null;}
+        if(!parsed||parsed.schema_version!==1||parsed.hash_format!=="git-blob-sha1"||
+           !parsed.files||typeof parsed.files!=="object")return null;
+        var paths=Object.keys(parsed.files);
+        if(!paths.length)return null;
+        for(var i=0;i<paths.length;i++){
+          var item=parsed.files[paths[i]];
+          if(paths[i].indexOf("../")!==-1||paths[i].charAt(0)==="/"||
+             !item||!Number.isSafeInteger(item.size)||item.size<1||
+             !/^[a-f0-9]{40}$/i.test(item.git_blob_sha1||""))return null;
+        }
+        return parsed;
+      });
+    })
+    .catch(function(){return null;});
+}
+
+function verifyAssetBuffer(path,buffer){
+  var expected=assetManifest&&assetManifest.files&&assetManifest.files[path];
+  if(!expected||buffer.byteLength!==expected.size)return Promise.resolve(false);
+  return gitBlobSha1(buffer).then(function(hash){
+    return !hash||hash.toLowerCase()===expected.git_blob_sha1.toLowerCase();
+  });
+}
+
 function head(path,token,attempt){
   attempt=attempt||1;
   if(token!==scanToken)return Promise.resolve(false);
 
   function viaFetch(){
     if(!window.fetch)return Promise.resolve(null);
-    var request;
-    try{
-      request=fetch(path,{method:"GET",cache:"no-cache",credentials:"same-origin"})
-        .then(function(r){
-          if(!r.ok)return false;
-          return r.arrayBuffer().then(function(buf){return buf.byteLength>0;}).catch(function(){
-            var len=Number(r.headers.get("content-length")||"0");
-            return len>0;
-          });
-        })
-        .catch(function(){return false;});
-    }catch(_){return Promise.resolve(null);}
-    var timeout=new Promise(function(resolve){setTimeout(function(){resolve(false);},5000);});
-    return Promise.race([request,timeout]);
+    return fetch(path,{method:"GET",cache:"reload",credentials:"same-origin"})
+      .then(function(response){
+        if(!response.ok)return false;
+        return response.arrayBuffer().then(function(buffer){
+          return verifyAssetBuffer(path,buffer);
+        });
+      })
+      .catch(function(){return false;});
   }
 
   function viaXHR(){
@@ -262,11 +316,14 @@ function head(path,token,attempt){
       try{
         xhr=new XMLHttpRequest();
         xhr.open("GET",path,true);
-        xhr.timeout=5000;
-        xhr.onload=function(){finish(xhr.status>=200&&xhr.status<400);};
+        xhr.timeout=7000;
+        xhr.responseType="arraybuffer";
+        xhr.onload=function(){
+          if(xhr.status<200||xhr.status>=400){finish(false);return;}
+          verifyAssetBuffer(path,xhr.response).then(finish).catch(function(){finish(false);});
+        };
         xhr.onerror=function(){finish(false);};
         xhr.ontimeout=function(){finish(false);};
-        try{xhr.responseType="arraybuffer";}catch(_){}
         xhr.send();
       }catch(_){finish(false);}
     });
@@ -290,6 +347,8 @@ function scan(){
   setExecution("IDLE","");
   launch.disabled=true;
   readySnapshot=null;
+  assetManifest=null;
+  window.h4=null;
   var d=detectFirmware(), fw=d.fw, row=route(fw);
   if(fwNotice)fwNotice.hidden=true;
   if(d.signals.length)terminalWrite(d.signals.join(" | "),"DETECT");
@@ -415,14 +474,27 @@ function scan(){
     readySnapshot=null;
   }
 
-  Promise.all(req.map(function(path,idx){
+  loadAssetManifest(token).then(function(manifest){
+    if(token!==scanToken)return null;
+    if(!manifest){
+      terminalWrite("No se pudo verificar el manifiesto de integridad de los archivos.","VERIFY");
+      failScan();
+      return null;
+    }
+    assetManifest=manifest;
+    if(!window.crypto||!crypto.subtle){
+      terminalWrite("WebCrypto no está disponible: se verificará el tamaño exacto de cada archivo.","VERIFY");
+    }else{
+      terminalWrite("Verificación Git-blob SHA-1 habilitada.","VERIFY");
+    }
+    return Promise.all(req.map(function(path,idx){
     terminalWrite("Archivo "+(idx+1)+"/"+req.length+": "+path,"ARCHIVO");
     return head(path,token).then(function(ok){
       if(!ok)bad.push(path);
       return ok;
     });
-  })).then(function(){
-    if(token!==scanToken)return;
+  })).then(function(results){
+    if(!results||token!==scanToken)return;
 
     if(bad.length){
     scanning=false;
@@ -431,6 +503,8 @@ function scan(){
     terminalWrite("missing: "+bad.slice(0,5).join(", ")+(bad.length>5?" ...":""),"SCAN");
     terminalWrite("route blocked: local asset verification failed","VERIFY");
     launch.disabled=true;
+    window.h4=null;
+    readySnapshot=null;
     return;
   }
 
