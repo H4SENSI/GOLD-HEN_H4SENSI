@@ -238,7 +238,7 @@ function checkPreviousVerification(fw,engine,routePath){
 }
 function gitBlobSha1(buffer){
   if(!window.crypto||!crypto.subtle||typeof Uint8Array==="undefined")return Promise.resolve(null);
-  var header="blob "+buffer.byteLength+"\\0";
+  var header="blob "+buffer.byteLength+"\0";
   var bytes=new Uint8Array(header.length+buffer.byteLength);
   for(var i=0;i<header.length;i++)bytes[i]=header.charCodeAt(i);
   bytes.set(new Uint8Array(buffer),header.length);
