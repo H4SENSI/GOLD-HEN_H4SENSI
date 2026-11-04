@@ -146,7 +146,9 @@ def main() -> int:
     for path, expected in manifest_files.items():
         if not isinstance(path, str) or not isinstance(expected, dict):
             raise SystemExit(f"ERROR: malformed asset manifest entry: {path!r}")
-        file_path = ROOT / path
+        file_path = (ROOT / path).resolve()
+        if ROOT not in file_path.parents:
+            raise SystemExit(f"ERROR: manifest path escapes repository: {path}")
         if not file_path.is_file():
             raise SystemExit(f"ERROR: manifest references missing asset: {path}")
         data = file_path.read_bytes()
@@ -170,8 +172,11 @@ def main() -> int:
         raise SystemExit("ERROR: offline precache list contains duplicate paths")
     if "asset-manifest.json" not in cache_assets:
         raise SystemExit("ERROR: asset-manifest.json must be available offline")
-    if "cache.manifest" in cache_assets:
-        raise SystemExit("ERROR: obsolete AppCache manifest must not be precached")
+    if "cache.manifest" in cache_assets or (ROOT / "cache.manifest").exists():
+        raise SystemExit("ERROR: obsolete AppCache manifest must be removed") 
+    missing_offline_assets = sorted(active_assets - set(cache_assets))
+    if missing_offline_assets:
+        raise SystemExit("ERROR: offline cache omits enabled route assets: " + ", ".join(missing_offline_assets))
 
     shell_match = re.search(r"const SHELL\s*=\s*\[(.*?)\];", service_worker, re.S)
     if not shell_match:
