@@ -181,7 +181,7 @@ def main() -> int:
     shell_match = re.search(r"const SHELL\s*=\s*\[(.*?)\];", service_worker, re.S)
     if not shell_match:
         raise SystemExit("ERROR: could not parse service-worker shell list")
-    shell_assets = [path.removeprefix("./") for path in quoted_paths(shell_match.group(1))]
+    shell_assets = [path.removeprefix("./") for path in quoted_paths(shell_match.group(1)) if path not in {"", "./"}]
 
     require_files(sorted(active_assets), "active firmware routes")
     require_files(cache_assets, "offline precache")
