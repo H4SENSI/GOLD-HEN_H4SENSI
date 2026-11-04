@@ -11,7 +11,7 @@ Este archivo registra lo que el repositorio puede afirmar actualmente. No conced
 
 ## Motores y archivos de exploit
 
-Los directorios `700/`, `900/`, `css/`, y los archivos JavaScript y binarios de la raíz contienen componentes técnicos de terceros o derivados. El repositorio no documenta todavía una relación completa de cada archivo con su proyecto de origen, commit, autor y licencia.
+Los directorios `700/`, `900/`, `css/`, y los archivos JavaScript y binarios de la raíz contienen código y componentes cuyo origen exacto no está documentado de forma exhaustiva en el repositorio. Hasta completar el inventario, no se debe asumir que cada archivo es original ni que todo el contenido puede redistribuirse.
 
 Antes de distribuir una copia pública o un derivado, el mantenedor debe:
 
