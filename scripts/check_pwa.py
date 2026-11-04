@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Comprueba enlaces internos y versiones de la caché del sitio."""
+"""Check PWA shell settings and safety interlocks for the PS4 launcher."""
+
 from pathlib import Path
 import re
 import sys
@@ -8,31 +9,39 @@ ROOT = Path(__file__).resolve().parents[1]
 index = (ROOT / "index.html").read_text(encoding="utf-8")
 cache = (ROOT / "cache.html").read_text(encoding="utf-8")
 worker = (ROOT / "sw.js").read_text(encoding="utf-8")
+jb_page = (ROOT / "jb.html").read_text(encoding="utf-8")
+readme = (ROOT / "README.md").read_text(encoding="utf-8")
+notices = ROOT / "THIRD_PARTY_NOTICES.md"
 
 errors = []
-for target in re.findall(r'href=["\']\./([^"\']+)["\']', index):
-    if target.startswith(("http:", "https:", "#")):
-        continue
-    if not (ROOT / target).is_file():
-        errors.append(f"index.html apunta a un archivo inexistente: {target}")
 
 versions = re.findall(r'register\(["\']\./sw\.js\?v=(\d+)["\']', index + cache)
-if len(versions) < 2 or len(set(versions)) != 1:
-    errors.append("index.html y cache.html deben registrar la misma versión del Service Worker")
+worker_version = re.search(r'const CACHE_VERSION = "([0-9]+)"', worker)
+if len(versions) != 2 or len(set(versions)) != 1:
+    errors.append("index.html and cache.html must register the same Service Worker version")
+elif not worker_version or versions[0] != worker_version.group(1):
+    errors.append("Service Worker URL version and cache namespace must match")
 
-if "h4sensi-offline-v12" not in worker:
-    errors.append("no se actualizó la versión de la caché del Service Worker")
-
-if 'if(fw==="14.00")' not in index or "H4SENSI no incorpora esta cadena" not in index:
-    errors.append("el launcher debe advertir que los hosts 14.00 son externos y mantener bloqueado el inicio local")
+if "asset-manifest.json" not in cache or "asset-manifest.json" not in worker:
+    errors.append("the integrity manifest must be included in the offline shell and precache")
+if "cache.manifest" in cache or re.search(r'<html[^>]+\bmanifest=', jb_page, re.I):
+    errors.append("obsolete Application Cache references must be removed")
+if 'if(fw==="14.00")' not in index or "No se iniciará el payload desde este host." not in index:
+    errors.append("firmware 14.00 must remain blocked by the internal launcher")
+if "H4SENSI no incorpora esta cadena" not in index:
+    errors.append("the 14.00 warning must identify external hosts as third-party services")
 for host_url in ("feedchats.fr/web14/jb.html", "ps4.sentrix.ac/raw13/jb.html"):
     if host_url not in index:
-        errors.append(f"falta el enlace externo esperado: {host_url}")
+        errors.append(f"missing expected external test-host notice: {host_url}")
 if "https://ko-fi.com/s/e694c36022" not in index:
-    errors.append("falta el enlace a la publicación de SiSTRo para GoldHEN v2.4b18.13")
+    errors.append("missing link to the SiSTRo beta publication")
+if not notices.is_file() or "redistribución" not in notices.read_text(encoding="utf-8").lower():
+    errors.append("THIRD_PARTY_NOTICES.md must document third-party provenance and redistribution checks")
+if "asset-manifest.json" not in readme:
+    errors.append("README.md must explain the integrity manifest")
 
 if errors:
     print("\n".join("ERROR: " + item for item in errors))
     sys.exit(1)
 
-print("Correcto: los enlaces locales existen y las versiones de caché coinciden.")
+print("Correcto: versiones de caché, manifiesto de integridad y bloqueos de firmware están sincronizados.")

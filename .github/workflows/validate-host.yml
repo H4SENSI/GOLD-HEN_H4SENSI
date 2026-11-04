@@ -20,3 +20,5 @@ jobs:
         run: python scripts/check_pwa.py
       - name: Revisar archivos de las rutas activas y la caché sin conexión
         run: python scripts/check_host_assets.py
+      - name: Revisar sintaxis del launcher y del Service Worker
+        run: python scripts/check_frontend_syntax.py
