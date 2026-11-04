@@ -15,7 +15,7 @@ notices = ROOT / "THIRD_PARTY_NOTICES.md"
 
 errors = []
 
-versions = re.findall(r'register\\(["\\']\\./sw\\.js\\?v=(\\d+)["\\']', index + cache)
+versions = re.findall(r'register\(["\']\./sw\.js\?v=(\d+)["\']', index + cache)
 worker_version = re.search(r'const CACHE_VERSION = "([0-9]+)"', worker)
 if len(versions) != 2 or len(set(versions)) != 1:
     errors.append("index.html and cache.html must register the same Service Worker version")
@@ -24,7 +24,7 @@ elif not worker_version or versions[0] != worker_version.group(1):
 
 if "asset-manifest.json" not in cache or "asset-manifest.json" not in worker:
     errors.append("the integrity manifest must be included in the offline shell and precache")
-if "cache.manifest" in cache or re.search(r'<html[^>]+\\bmanifest=', jb_page, re.I):
+if "cache.manifest" in cache or re.search(r'<html[^>]+\bmanifest=', jb_page, re.I):
     errors.append("obsolete Application Cache references must be removed")
 if 'if(fw==="14.00")' not in index or "No se iniciará el payload desde este host." not in index:
     errors.append("firmware 14.00 must remain blocked by the internal launcher")
@@ -41,7 +41,7 @@ if "asset-manifest.json" not in readme:
     errors.append("README.md must explain the integrity manifest")
 
 if errors:
-    print("\\n".join("ERROR: " + item for item in errors))
+    print("\n".join("ERROR: " + item for item in errors))
     sys.exit(1)
 
 print("Correcto: versiones de caché, manifiesto de integridad y bloqueos de firmware están sincronizados.")
