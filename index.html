@@ -243,7 +243,7 @@ function gitBlobSha1(buffer){
   for(var i=0;i<header.length;i++)bytes[i]=header.charCodeAt(i);
   bytes.set(new Uint8Array(buffer),header.length);
   return crypto.subtle.digest("SHA-1",bytes).then(function(hash){
-    return Array.prototype.map.call(new Uint8Array(hash),function(b){return b.toString(16).padStart(2,"0");}).join("");
+    return Array.prototype.map.call(new Uint8Array(hash),function(b){return ("0"+b.toString(16)).slice(-2);}).join("");
   }).catch(function(){return null;});
 }
 
