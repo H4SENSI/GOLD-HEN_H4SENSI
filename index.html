@@ -256,33 +256,60 @@ function decodeUtf8(buffer){
   return decodeURIComponent(escape(out));
 }
 
+function validateAssetManifestBuffer(buffer,token){
+  if(!buffer||token!==scanToken||buffer.byteLength!==ASSET_MANIFEST_SIZE)return Promise.resolve(null);
+  return gitBlobSha1(buffer).then(function(hash){
+    if(hash&&hash!==ASSET_MANIFEST_SHA1)return null;
+    var parsed;
+    try{parsed=JSON.parse(decodeUtf8(buffer));}catch(_){return null;}
+    if(!parsed||parsed.schema_version!==1||parsed.hash_format!=="git-blob-sha1"||
+       !parsed.files||typeof parsed.files!=="object")return null;
+    var paths=Object.keys(parsed.files);
+    if(!paths.length)return null;
+    for(var i=0;i<paths.length;i++){
+      var item=parsed.files[paths[i]];
+      if(paths[i].indexOf("../")!==-1||paths[i].charAt(0)==="/"||
+         !item||typeof item.size!=="number"||!isFinite(item.size)||
+         Math.floor(item.size)!==item.size||item.size<1||
+         !/^[a-f0-9]{40}$/i.test(item.git_blob_sha1||""))return null;
+    }
+    return parsed;
+  }).catch(function(){return null;});
+}
+
 function loadAssetManifest(token){
-  if(!window.fetch)return Promise.resolve(null);
-  return fetch("./asset-manifest.json",{method:"GET",cache:"reload",credentials:"same-origin"})
-    .then(function(response){
-      if(!response.ok)return null;
-      return response.arrayBuffer();
-    })
-    .then(function(buffer){
-      if(!buffer||token!==scanToken||buffer.byteLength!==ASSET_MANIFEST_SIZE)return null;
-      return gitBlobSha1(buffer).then(function(hash){
-        if(hash&&hash!==ASSET_MANIFEST_SHA1)return null;
-        var parsed;
-        try{parsed=JSON.parse(decodeUtf8(buffer));}catch(_){return null;}
-        if(!parsed||parsed.schema_version!==1||parsed.hash_format!=="git-blob-sha1"||
-           !parsed.files||typeof parsed.files!=="object")return null;
-        var paths=Object.keys(parsed.files);
-        if(!paths.length)return null;
-        for(var i=0;i<paths.length;i++){
-          var item=parsed.files[paths[i]];
-          if(paths[i].indexOf("../")!==-1||paths[i].charAt(0)==="/"||
-             !item||!Number.isSafeInteger(item.size)||item.size<1||
-             !/^[a-f0-9]{40}$/i.test(item.git_blob_sha1||""))return null;
-        }
-        return parsed;
-      });
-    })
-    .catch(function(){return null;});
+  if(window.fetch){
+    return fetch("./asset-manifest.json",{method:"GET",cache:"reload",credentials:"same-origin"})
+      .then(function(response){
+        if(!response.ok)return null;
+        return response.arrayBuffer();
+      })
+      .then(function(buffer){return validateAssetManifestBuffer(buffer,token);})
+      .catch(function(){return null;});
+  }
+
+  return new Promise(function(resolve){
+    var xhr=null,done=false;
+    function finish(value){
+      if(done)return;
+      done=true;
+      try{if(xhr)xhr.abort();}catch(_){}
+      resolve(value);
+    }
+    try{
+      xhr=new XMLHttpRequest();
+      xhr.open("GET","./asset-manifest.json",true);
+      xhr.timeout=10000;
+      xhr.responseType="arraybuffer";
+      xhr.onload=function(){
+        if(xhr.status<200||xhr.status>=400){finish(null);return;}
+        validateAssetManifestBuffer(xhr.response,token).then(finish).catch(function(){finish(null);});
+      };
+      xhr.onerror=function(){finish(null);};
+      xhr.ontimeout=function(){finish(null);};
+      xhr.send();
+    }catch(_){finish(null);}
+  });
 }
 
 function verifyAssetBuffer(path,buffer){
