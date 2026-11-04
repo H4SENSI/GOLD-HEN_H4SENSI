@@ -64,7 +64,7 @@ python scripts/check_pwa.py
 python scripts/check_host_assets.py
 ```
 
-GitHub Actions ejecuta ambas comprobaciones en los commits y pull requests. Si se reemplaza un archivo de una ruta habilitada, actualizá `asset-manifest.json` con su tamaño y Git blob SHA-1 y luego actualizá el pin y el tamaño del manifiesto en `index.html`. No habilites una ruta solamente porque sus archivos existan: primero verificá su procedencia y compatibilidad en hardware real.
+GitHub Actions ejecuta las tres comprobaciones en los commits y pull requests. Si se reemplaza un archivo de una ruta habilitada, actualizá `asset-manifest.json` con su tamaño y Git blob SHA-1 y luego actualizá el pin y el tamaño del manifiesto en `index.html`. No habilites una ruta solamente porque sus archivos existan: primero verificá su procedencia y compatibilidad en hardware real.
 
 ## Estructura
 
